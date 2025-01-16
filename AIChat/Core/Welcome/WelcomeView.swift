@@ -10,7 +10,18 @@ import SwiftUI
 struct WelcomeView: View {
     var body: some View {
         NavigationStack {
-            Text("Welcome to AIChat my G!")
+            VStack {
+                Text("Welcome!")
+                    .frame(maxHeight: .infinity)
+                
+                NavigationLink {
+                    OnboardingCompletedView()
+                } label: {
+                    Text("Get Started my G!")
+                        .callToActionButton()
+                }
+            }
+            .padding(16)
         }
     }
 }
