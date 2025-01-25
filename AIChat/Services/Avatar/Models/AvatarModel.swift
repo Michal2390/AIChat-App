@@ -79,11 +79,21 @@ struct AvatarDescriptionBuilder {
     }
 }
 
-enum CharacterOption {
+enum CharacterOption: String, CaseIterable, Hashable {
     case man, woman, alien, dog, cat
     
     static var `default`: Self {
         .man
+    }
+    
+    var displayName: String {
+        switch self {
+        case .man: return "Man"
+        case .woman: return "Woman"
+        case .alien: return "Alien"
+        case .dog: return "Dog"
+        case .cat: return "Cat"
+        }
     }
 }
 
