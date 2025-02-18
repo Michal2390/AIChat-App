@@ -9,17 +9,24 @@ import SwiftUI
 
 struct CustomListCellView: View {
 
-    let imageName: String = Constants.randomImage
+    var imageName: String? = Constants.randomImage
     var title: String? = "Alpha"
     var subtitle: String? = "An alien that is smiling in the park"
     let items: [AvatarModel] = AvatarModel.mocks
     
     var body: some View {
         HStack(spacing: 8) {
-            ImageLoaderView(urlString: imageName)
-                .aspectRatio(1, contentMode: .fit)
-                .frame(height: 60)
-                .cornerRadius(16)
+            ZStack {
+                if let imageName {
+                    ImageLoaderView(urlString: imageName)
+                } else {
+                    Rectangle()
+                        .fill(.secondary.opacity(0.5))
+                }
+            }
+            .aspectRatio(1, contentMode: .fit)
+            .frame(height: 60)
+            .cornerRadius(16)
             
             VStack(alignment: .leading, spacing: 4) {
                 if let title {
@@ -42,6 +49,12 @@ struct CustomListCellView: View {
 #Preview {
     ZStack {
         Color.gray.ignoresSafeArea(edges: .all)
-        CustomListCellView()
+        VStack {
+            CustomListCellView()
+            CustomListCellView(imageName: nil)
+            CustomListCellView(title: nil)
+            CustomListCellView(subtitle: nil)
+
+        }
     }
 }

@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ExploreView: View {
     
-    let avatar = AvatarModel.mock
     @State private var featuredAvatars: [AvatarModel] = AvatarModel.mocks
     @State private var categories: [CharacterOption] = CharacterOption.allCases
     @State private var popularAvatars: [AvatarModel] = AvatarModel.mocks
@@ -19,6 +18,7 @@ struct ExploreView: View {
             List {
                 featuredSection
                 categorySection
+                popularSection
             }
             .navigationTitle("Explore")
         }
@@ -33,6 +33,9 @@ struct ExploreView: View {
                         subtitle: avatar.characterDescription,
                         imageName: avatar.profileImageName
                     )
+                    .anyButton {
+                        
+                    }
                 }
             }
             .removeListRowFormatting()
@@ -51,6 +54,9 @@ struct ExploreView: View {
                                 title: category.rawValue.capitalized,
                                 imageName: Constants.randomImage
                             )
+                            .anyButton {
+                                
+                            }
                         }
                     }
                 }
@@ -67,26 +73,19 @@ struct ExploreView: View {
     
     private var popularSection: some View {
         Section {
-            ZStack {
-                ScrollView(.horizontal) {
-                    HStack(spacing: 12) {
-                        ForEach(popularAvatars, id: \.self) { avatar in
-                            CustomListCellView(
-                                title: avatar.name,
-                                subtitle: avatar.characterDescription,
-                                imageName: avatar.profileImageName
-                            )
-                        }
-                    }
+            ForEach(popularAvatars, id: \.self) { avatar in
+                CustomListCellView(
+                    imageName: avatar.profileImageName,
+                    title: avatar.name,
+                    subtitle: avatar.characterDescription
+                )
+                .anyButton(.highlight) {
+                     
                 }
-                .frame(height: 140)
-                .scrollIndicators(.hidden)
-                .scrollTargetLayout()
-                .scrollTargetBehavior(.viewAligned)
+                .removeListRowFormatting()
             }
-            .removeListRowFormatting()
         } header: {
-            Text("Categories")
+            Text("Popular")
         }
     }
 }

@@ -35,18 +35,17 @@ struct OnboardingCompletedView: View {
     }
     
     private var ctaButton: some View {
-        Button {
-            onFinishButtonPressed()
-        } label: {
-            ZStack {
-                if isCompletingProfileSetup {
-                    ProgressView()
-                        .tint(.white)
-                } else {
-                    Text("Finish!")
-                }
+        ZStack {
+            if isCompletingProfileSetup {
+                ProgressView()
+                    .tint(.white)
+            } else {
+                Text("Finish!")
             }
-            .callToActionButton()
+        }
+        .callToActionButton()
+        .anyButton(.press) {
+            onFinishButtonPressed()
         }
         .disabled(isCompletingProfileSetup) // to not cause potential bug by saving many times to the database
     }
