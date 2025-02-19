@@ -6,7 +6,7 @@
 //
 import Foundation
 
-struct ChatMessageModel {
+struct ChatMessageModel: Identifiable {
     let id: String
     let chatId: String
     let authorId: String?
@@ -43,9 +43,9 @@ struct ChatMessageModel {
         let now = Date()
         return [
             ChatMessageModel(id: "mock_Message_chat_1", chatId: "1", authorId: "user1", content: "Hello, how are u my G?", seenByIds: ["user2", "user3"], dateCreated: now),
-            ChatMessageModel(id: "mock_Message_chat_1", chatId: "1", authorId: "user2", content: "I am feeling thank you", seenByIds: ["user1"], dateCreated: now.addingTimeInterval(minutes: -5)),
-            ChatMessageModel(id: "mock_Message_chat_1", chatId: "1", authorId: "user3", content: "Anything is possible - and Jayson Tatum has Aura", seenByIds: ["user1", "user2", "user4"], dateCreated: now.addingTimeInterval(hours: -1)),
-            ChatMessageModel(id: "mock_Message_chat_1", chatId: "1", authorId: "user1", content: "Luka in Lakers? Bro thats crazy", seenByIds: nil, dateCreated: now.addingTimeInterval(hours: -5, minutes: -30))
+            ChatMessageModel(id: "mock_Message_chat_2", chatId: "2", authorId: "user2", content: "I am feeling thank you", seenByIds: ["user1"], dateCreated: now.addingTimeInterval(minutes: -5)),
+            ChatMessageModel(id: "mock_Message_chat_3", chatId: "3", authorId: "user3", content: "Anything is possible - and Jayson Tatum has Aura", seenByIds: ["user1", "user2", "user4"], dateCreated: now.addingTimeInterval(hours: -1)),
+            ChatMessageModel(id: "mock_Message_chat_4", chatId: "1", authorId: "user1", content: "Luka in Lakers? Bro thats crazy", seenByIds: nil, dateCreated: now.addingTimeInterval(hours: -5, minutes: -30))
         ]
     }
 }
