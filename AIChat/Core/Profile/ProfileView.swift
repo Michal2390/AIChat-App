@@ -32,7 +32,7 @@ struct ProfileView: View {
             SettingsView()
         }
         .fullScreenCover(isPresented: $showCreateAvatarView) {
-            Text("Create avatar ")
+            CreateAvatarView()
         }
         .task {
             await loadData()
