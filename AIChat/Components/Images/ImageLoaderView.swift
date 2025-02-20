@@ -12,6 +12,7 @@ struct ImageLoaderView: View {
     
     var urlString: String = Constants.randomImage
     var resizingMode: ContentMode = .fill
+    var forceTransitionAnimation: Bool = false
     
     var body: some View {
         Rectangle()
@@ -23,6 +24,10 @@ struct ImageLoaderView: View {
                     .aspectRatio(contentMode: resizingMode)
             )
             .clipped()
+            .ifSatisfiedCondition(forceTransitionAnimation) { content in
+                content
+                    .drawingGroup() // slowing the rendering to avoid an animation bug, with a cost of a slight milisecond delay in rendering all ImageLoaderViews
+            }
     }
 }
 
