@@ -26,7 +26,7 @@ struct ModalSupportView<Content: View>: View {
                 content
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .ignoresSafeArea()
-                    .zIndex(2) //to ensure the content is always above the black background
+                    .zIndex(2) // to ensure the content is always above the black background
             }
         }
         .zIndex(9999) // to ensure this Modal is always on top
