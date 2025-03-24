@@ -1,3 +1,10 @@
+//
+//  UserAuthInfo.swift
+//  AIChat
+//
+//  Created by Michal Fereniec on 24/03/2025.
+//
+import SwiftUI
 
 struct UserAuthInfo: Sendable {
     let uid: String
@@ -18,13 +25,5 @@ struct UserAuthInfo: Sendable {
         self.isAnonymous = isAnonymous
         self.creationDate = creationDate
         self.lastSignInDate = lastSignInDate
-    }
-
-    init(user: User) {
-        self.uid = user.uid
-        self.email = user.email
-        self.isAnonymous = user.isAnonymous
-        self.creationDate = user.metadata.creationDate
-        self.lastSignInDate = user.metadata.lastSignInDate
     }
 }
