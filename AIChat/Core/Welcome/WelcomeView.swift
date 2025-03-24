@@ -34,7 +34,7 @@ struct WelcomeView: View {
             CreateAccountView(
                 title: "Sign in",
                 subtitle: "Connect to an existing account",
-                handleDidSignIn: { isNewUser in
+                onDidSignIn: { isNewUser in
                     handleDidSignIn(isNewUser: isNewUser)
                 }
             )
