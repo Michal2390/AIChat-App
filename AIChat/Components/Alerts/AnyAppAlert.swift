@@ -57,7 +57,8 @@ extension View {
                 } message: {
                     if let subtitle =  alert.wrappedValue?.subtitle {
                         Text(subtitle)
-                    }                }
+                    }
+                }
         }
     }
 }
