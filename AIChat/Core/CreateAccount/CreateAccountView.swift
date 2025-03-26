@@ -11,6 +11,7 @@ struct CreateAccountView: View {
     
     @Environment(\.dismiss) private var dismiss
     @Environment(AuthManager.self) private var authManager
+    @Environment(UserManager.self) private var userManager
 
     var title: String = "Create Account?"
     var subtitle: String = "Don't lose your data! Connect to an SSO provider to save your account."
@@ -47,8 +48,12 @@ struct CreateAccountView: View {
         Task {
             do {
                 let result = try await authManager.signInApple()
+                print("Did sign in with apple broski! \(result.user.uid)")
+                
+                try await userManager.logIn(auth: result.user, isNewUser: result.isNewUser)
+                print("Did log in")
+                
                 onDidSignIn?(result.isNewUser)
-                print("Did sign in with apple broski!")
                 dismiss()
             } catch {
                 print("Error signing in with Apple :(")
