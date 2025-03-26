@@ -11,7 +11,7 @@ struct AnyAppAlert: Sendable {
     var title: String
     var subtitle: String?
     var buttons: @Sendable () -> AnyView
-    
+
     init(
         title: String,
         subtitle: String? = nil,
@@ -22,7 +22,7 @@ struct AnyAppAlert: Sendable {
         self.buttons = buttons ?? {
             AnyView(
                 Button("OK") {
-                    
+
                 }
             )
         }
@@ -37,7 +37,7 @@ enum AlertType {
 }
 
 extension View {
-    
+
     @ViewBuilder
     func showCustomAlert(type: AlertType = .alert, alert: Binding<AnyAppAlert?>) -> some View {
         switch type {

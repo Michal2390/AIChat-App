@@ -13,20 +13,20 @@ struct WelcomeView: View {
 
     @State var imageName: String = Constants.randomImage
     @State private var showSignInView: Bool = false
-    
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 8) {
                 ImageLoaderView(urlString: imageName)
                     .ignoresSafeArea()
                     .frame(height: 480)
-                
+
                 titleSection
                     .padding(.top, 24)
-                
+
                 ctaButtons
                     .padding(16)
-                
+
                 policyLinks
             }
         }
@@ -41,7 +41,7 @@ struct WelcomeView: View {
             .presentationDetents([.medium])
         }
     }
-    
+
     private var titleSection: some View {
         VStack {
             Text(Constants.welcomeText)
@@ -54,7 +54,7 @@ struct WelcomeView: View {
                 .foregroundStyle(.secondary)
         }
     }
-    
+
     private var ctaButtons: some View {
         VStack(spacing: 8) {
             NavigationLink {
@@ -63,7 +63,7 @@ struct WelcomeView: View {
                 Text("Get Started my G!")
                     .callToActionButton()
             }
-            
+
             Text("Already have an account? Sign in.")
                 .foregroundStyle(.black)
                 .underline()
@@ -75,7 +75,7 @@ struct WelcomeView: View {
                 }
         }
     }
-    
+
     private func handleDidSignIn(isNewUser: Bool) {
         if isNewUser {
             // Do nothing, user goes through onboarding
@@ -84,11 +84,11 @@ struct WelcomeView: View {
             root.updateViewState(showTabBarView: true)
         }
     }
-    
+
     private func onSignInPressed() {
         showSignInView = true
     }
-    
+
     private var policyLinks: some View {
         HStack(spacing: 8) {
             Link(destination: URL(string: Constants.termsOfServiceURL)!) {

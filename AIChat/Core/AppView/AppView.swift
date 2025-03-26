@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct AppView: View {
-    
+
     @Environment(AuthManager.self) private var authManager
     @Environment(UserManager.self) private var userManager
     @State var appState: AppState = AppState()
-    
+
     var body: some View {
         AppViewBuilder(
             showTabBar: appState.showTabbar,
@@ -35,12 +35,12 @@ struct AppView: View {
             }
         }
     }
-    
+
     private func checkUserStatus() async {
         if let user = authManager.auth {
             // user is authenticated
             print("User already authenticated: \(user.uid)")
-            
+
             do {
                 try await userManager.logIn(auth: user, isNewUser: false)
             } catch {
@@ -50,13 +50,13 @@ struct AppView: View {
             }
         } else {
             // user is not authenticated
-            
+
             do {
                 let result = try await authManager.signInAnynomously()
-                
+
                 // log in to app
                 print("Sign in anonymous success: \(result.user.uid)")
-                
+
                 // Log in
                 try await userManager.logIn(auth: result.user, isNewUser: result.isNewUser)
             } catch {
@@ -70,8 +70,12 @@ struct AppView: View {
 
 #Preview("AppView - Tabbar") {
     AppView(appState: AppState(showTabbar: true))
+        .environment(AuthManager(service: MockAuthService(user: .mock())))
+        .environment(UserManager(service: MockUserService(user: .mock)))
 }
 
 #Preview("AppView - Onboarding") {
     AppView(appState: AppState(showTabbar: false))
+        .environment(UserManager(service: MockUserService(user: nil)))
+        .environment(UserManager(service: MockUserService(user: nil)))
 }

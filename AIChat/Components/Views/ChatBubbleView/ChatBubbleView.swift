@@ -8,16 +8,16 @@
 import SwiftUI
 
 struct ChatBubbleView: View {
-    
+
     var text: String = "This is a sample text"
     var textColor: Color = .primary
     var backgroundColor: Color = Color(uiColor: .systemGray6)
     var showImage: Bool = true
     var imageName: String?
     var onImagePressed: (() -> Void)?
-    
+
     let offset: CGFloat = 14
-    
+
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
             if showImage {
@@ -36,7 +36,7 @@ struct ChatBubbleView: View {
                 .clipShape(Circle())
                 .offset(y: 14)
             }
-            
+
             Text(text)
                 .font(.body)
                 .foregroundStyle(textColor)
@@ -54,7 +54,7 @@ struct ChatBubbleView: View {
         VStack(spacing: 16) {
             ChatBubbleView()
             ChatBubbleView(text: "this is a chat bubble witha  lot of text my nigga and this is a chat bubble witha  lot of text my nigga and this is a chat bubble witha  lot of text my nigga and this is a chat bubble witha  lot of text my nigga and this is a chat bubble witha  lot of text my nigga and ")
-            
+
             ChatBubbleView(
                 textColor: .white,
                 backgroundColor: .accent,

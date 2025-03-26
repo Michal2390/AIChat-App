@@ -6,11 +6,11 @@
 //
 enum CharacterOption: String, CaseIterable, Hashable {
     case man, woman, alien, dog, cat, elephant
-    
+
     static var `default`: Self {
         .man
     }
-    
+
     var plural: String {
         switch self {
         case .man:
@@ -27,9 +27,9 @@ enum CharacterOption: String, CaseIterable, Hashable {
             return "elephants"
         }
     }
-    
+
     var startsWithVowel: Bool {
-        switch self { 
+        switch self {
         case .alien:
             return true
         default:
@@ -40,7 +40,7 @@ enum CharacterOption: String, CaseIterable, Hashable {
 
 enum CharacterAction: String, CaseIterable, Hashable {
     case eating, drinking, sleeping, smiling, sitting, walking, shopping, studying, working, relaxing, fighting, crying, laughing
-    
+
     static var `default`: Self {
         .smiling
     }
@@ -48,7 +48,7 @@ enum CharacterAction: String, CaseIterable, Hashable {
 
 enum CharacterLocation: String, CaseIterable, Hashable {
     case park, mall, museum, city, desert, forest, beach, mountain, space
-    
+
     static var `default`: Self {
         .museum
     }
@@ -58,19 +58,19 @@ struct AvatarDescriptionBuilder {
     let characterOption: CharacterOption
     let characterAction: CharacterAction
     let characterLocation: CharacterLocation
-    
+
     init(characterOption: CharacterOption, characterAction: CharacterAction, characterLocation: CharacterLocation) {
         self.characterOption = characterOption
         self.characterAction = characterAction
         self.characterLocation = characterLocation
     }
-    
+
     init(avatar: AvatarModel) {
         self.characterOption = avatar.characterOption ?? .default
         self.characterAction = avatar.characterAction ?? .default
         self.characterLocation = avatar.characterLocation ?? .default
     }
-    
+
     var characterDescription: String {
         let prefix = characterOption.startsWithVowel ? "An" : "A"
         return "\(prefix) \(characterOption) that is \(characterAction) in the \(characterLocation)."

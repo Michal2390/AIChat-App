@@ -8,17 +8,17 @@
 import SwiftUI
 
 struct SettingsView: View {
-    
+
     @Environment(\.dismiss) private var dismiss
     @Environment(AuthManager.self) private var authManager
-
+    @Environment(UserManager.self) private var userManager
     @Environment(AppState.self) private var appState
-    
+
     @State private var isPremium: Bool = false
     @State private var isAnonymousUser: Bool = false
     @State private var showCreateAccountView: Bool = false
     @State private var showAlert: AnyAppAlert?
-    
+
     var body: some View {
         NavigationStack {
             List {
@@ -39,7 +39,7 @@ struct SettingsView: View {
             .showCustomAlert(alert: $showAlert)
         }
     }
-    
+
     private var accountSection: some View {
         Section {
             if isAnonymousUser {
@@ -67,9 +67,9 @@ struct SettingsView: View {
         } header: {
             Text("Account")
         }
-        
+
     }
-    
+
     private var purchasesSection: some View {
         Section {
             HStack(spacing: 8) {
@@ -82,7 +82,7 @@ struct SettingsView: View {
             }
                 .rowFormatting()
                 .anyButton(.highlight) {
-        
+
                 }
                 .disabled(!isPremium)
                 .removeListRowFormatting()
@@ -90,7 +90,7 @@ struct SettingsView: View {
             Text("Purchases")
         }
     }
-    
+
     private var applicationSection: some View {
         Section {
             HStack(spacing: 8) {
@@ -101,7 +101,7 @@ struct SettingsView: View {
             }
                 .rowFormatting()
                 .removeListRowFormatting()
-            
+
             HStack(spacing: 8) {
                 Text("Build Number")
                 Spacer(minLength: 0)
@@ -110,12 +110,12 @@ struct SettingsView: View {
             }
                 .rowFormatting()
                 .removeListRowFormatting()
-            
+
             Text("Contact us")
                 .foregroundStyle(.blue)
                 .rowFormatting()
                 .anyButton(.highlight, action: {
-                    
+
                 })
                 .removeListRowFormatting()
         } header: {
@@ -125,29 +125,31 @@ struct SettingsView: View {
                 .baselineOffset(4)
         }
     }
-    
+
     func setAnonymousAccountStatus() {
         isAnonymousUser = authManager.auth?.isAnonymous == true
     }
-    
+
     func onSignOutPressed() {
         Task {
             do {
                 try authManager.signOut()
+                try userManager.signOut()
+
                 await dismissScreen()
             } catch {
                 showAlert = AnyAppAlert(error: error)
             }
-            
+
         }
     }
-    
+
     private func dismissScreen() async {
         dismiss()
         try? await Task.sleep(for: .seconds(1))
         appState.updateViewState(showTabBarView: false)
     }
-    
+
     func onDeleteAccountPressed() {
         showAlert = AnyAppAlert(
             title: "Delete account?",
@@ -161,26 +163,28 @@ struct SettingsView: View {
             }
         )
     }
-    
+
     private func onDeleteAccountConfirmed() {
         Task {
             do {
                 try await authManager.deleteAccount()
+                try await userManager.deleteCurrentUser()
+
                 await dismissScreen()
             } catch {
                 showAlert = AnyAppAlert(error: error)
             }
-            
+
         }
     }
-    
+
     func onCreateAccountPressed() {
         showCreateAccountView = true
     }
 }
 
 fileprivate extension View {
-    
+
     func rowFormatting() -> some View {
         self
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -193,17 +197,20 @@ fileprivate extension View {
 #Preview("No Auth") {
     SettingsView()
         .environment(AuthManager(service: MockAuthService(user: nil)))
+        .environment(UserManager(service: MockUserService(user: nil)))
         .environment(AppState())
 }
 
 #Preview("Anonymous") {
     SettingsView()
         .environment(AuthManager(service: MockAuthService(user: UserAuthInfo.mock(isAnonymous: true))))
+        .environment(UserManager(service: MockUserService(user: .mock)))
         .environment(AppState())
 }
 
 #Preview("Not Anonymous") {
     SettingsView()
         .environment(AuthManager(service: MockAuthService(user: UserAuthInfo.mock(isAnonymous: false))))
+        .environment(UserManager(service: MockUserService(user: .mock)))
         .environment(AppState())
 }

@@ -7,8 +7,12 @@
 
 import Foundation
 import SwiftUI
+import IdentifiableByString
 
-struct UserModel: Codable {
+struct UserModel: Codable, StringIdentifiable {
+    var id: String {
+        userId
+    }
     let userId: String
     let email: String?
     let isAnonymous: Bool?
@@ -17,7 +21,7 @@ struct UserModel: Codable {
     let lastSignInDate: Date?
     let didCompleteOnboarding: Bool?
     let profileColorHex: String?
-    
+
     init(
         userId: String,
         email: String? = nil,
@@ -37,7 +41,7 @@ struct UserModel: Codable {
         self.didCompleteOnboarding = didCompleteOnboarding
         self.profileColorHex = profileColorHex
     }
-    
+
     init(auth: UserAuthInfo, creationVersion: String?) {
         self.init(
             userId: auth.uid,
@@ -48,7 +52,7 @@ struct UserModel: Codable {
             lastSignInDate: auth.lastSignInDate
         )
     }
-    
+
     enum CodingKeys: String, CodingKey {
         case userId = "user_id"
         case email
@@ -59,16 +63,16 @@ struct UserModel: Codable {
         case didCompleteOnboarding = "did_complete_onboarding"
         case profileColorHex = "profile_color_hex"
     }
-    
+
     var profileColorCalculated: Color {
         guard let profileColorHex else { return .accent }
         return Color(hex: profileColorHex)
     }
-    
+
     static var mock: Self {
         mocks[0]
     }
-    
+
     static var mocks: [Self] {
         let now = Date()
         return [

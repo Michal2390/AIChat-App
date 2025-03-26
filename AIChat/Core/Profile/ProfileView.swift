@@ -8,15 +8,17 @@
 import SwiftUI
 
 struct ProfileView: View {
+
+    @Environment(UserManager.self) private var userManager
     
     @State private var showSettingsView: Bool = false
     @State private var showCreateAvatarView: Bool = false
-    @State private var currentUser: UserModel? = .mock
+    @State private var currentUser: UserModel?
     @State private var myAvatars: [AvatarModel] = []
     @State private var isLoading: Bool = true
-    
+
     @State private var path: [NavigationPathOption] = []
-    
+
     var body: some View {
         NavigationStack(path: $path) {
             List {
@@ -41,13 +43,15 @@ struct ProfileView: View {
             await loadData()
         }
     }
-    
+
     private func loadData() async {
+        self.currentUser = userManager.currentUser
+        
         try? await Task.sleep(for: .seconds(5))
         isLoading = false
         myAvatars = AvatarModel.mocks
     }
-    
+
     private var myInfoSection: some View {
         Section {
             ZStack {
@@ -59,7 +63,7 @@ struct ProfileView: View {
             .removeListRowFormatting()
         }
     }
-    
+
     private var myAvatarsSection: some View {
         Section {
             if myAvatars.isEmpty {
@@ -94,7 +98,7 @@ struct ProfileView: View {
             HStack(spacing: 0) {
                 Text("My avatars")
                 Spacer()
-                
+
                 Image(systemName: "plus.circle.fill")
                     .font(.title)
                     .foregroundStyle(.accent)
@@ -104,7 +108,7 @@ struct ProfileView: View {
             }
         }
     }
-    
+
     private var settingsButton: some View {
         Image(systemName: "gear")
             .font(.headline)
@@ -113,19 +117,19 @@ struct ProfileView: View {
                 onSettingsButtonPressed()
             }
     }
-    
+
     private func onSettingsButtonPressed() {
         showSettingsView = true
     }
-    
+
     private func onNewAvatarButtonPressed() {
         showCreateAvatarView = true
     }
-    
+
     private func onAvatarPressed(avatar: AvatarModel) {
         path.append(.chat(avatarId: avatar.avatarId))
     }
-    
+
     private func onDeleteAvatar(indexSet: IndexSet) {
         guard let index = indexSet.first else { return }
         myAvatars.remove(at: index)
@@ -135,4 +139,5 @@ struct ProfileView: View {
 #Preview {
     ProfileView()
         .environment(AppState())
+        .environment(UserManager(service: MockUserService(user: .mock)))
 }

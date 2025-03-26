@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct ChatsView: View {
-    
+
     @State private var chats: [ChatModel] = ChatModel.mocks
     @State private var recentsAvatars: [AvatarModel] = AvatarModel.mocks
-    
+
     @State private var path: [NavigationPathOption] = []
-    
+
     var body: some View {
         NavigationStack(path: $path) {
             List {
@@ -26,7 +26,7 @@ struct ChatsView: View {
             .navigationDestinationForCoreModule(path: $path)
         }
     }
-    
+
     private var chatsSection: some View {
         Section {
             if chats.isEmpty {
@@ -62,7 +62,7 @@ struct ChatsView: View {
         }
 
     }
-    
+
     private var recentsSection: some View {
         Section {
             ScrollView(.horizontal) {
@@ -73,7 +73,7 @@ struct ChatsView: View {
                                 ImageLoaderView(urlString: imageName)
                                     .aspectRatio(1, contentMode: .fit)
                                     .clipShape(Circle())
-                                
+
                                 Text(avatar.name ?? "")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
@@ -93,11 +93,11 @@ struct ChatsView: View {
             Text("Recents")
         }
     }
-    
+
     private func onChatPressed(chat: ChatModel) {
         path.append(.chat(avatarId: chat.avatarId))
     }
-    
+
     private func onAvatarPressed(avatar: AvatarModel) {
         path.append(.chat(avatarId: avatar.avatarId))
     }

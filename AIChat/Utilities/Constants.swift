@@ -13,4 +13,5 @@ struct Constants {
     static let welcomeName = "made by Michał Fereniec"
     static let termsOfServiceURL = "https://www.apple.com/legal/privacy/en-us/"
     static let privacyPolicyURL = "https://www.apple.com/legal/privacy/en-us/"
+    static let accentColorHex = "#FF5757"
 }

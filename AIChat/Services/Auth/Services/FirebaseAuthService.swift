@@ -10,7 +10,7 @@ import SwiftUI
 import SignInAppleAsync
 
 struct FirebaseAuthService: AuthService {
-    
+
     func addAuthenticatedUserListener(onListenerAttached: (any NSObjectProtocol) -> Void) -> AsyncStream<UserAuthInfo?> {
         AsyncStream { continuation in
             let listener = Auth.auth().addStateDidChangeListener { _, currentUser in
@@ -21,33 +21,33 @@ struct FirebaseAuthService: AuthService {
                     continuation.yield(nil)
                 }
             }
-            
+
             onListenerAttached(listener)
         }
     }
-    
+
     func getAuthenticatedUser() -> UserAuthInfo? {
         if let user = Auth.auth().currentUser {
             return UserAuthInfo(user: user )
         }
         return nil
     }
-    
+
     func signInAnynomously() async throws -> (user: UserAuthInfo, isNewUser: Bool) {
         let result = try await Auth.auth().signInAnonymously()
         return result.asAuthInfo
     }
-    
+
     func signInApple() async throws -> (user: UserAuthInfo, isNewUser: Bool) {
         let helper = await SignInWithAppleHelper()
         let response = try await helper.signIn()
-        
+
         let credential = OAuthProvider.credential(
             providerID: AuthProviderID.apple,
             idToken: response.token,
             rawNonce: response.nonce
         )
-        
+
         if let user = Auth.auth().currentUser, user.isAnonymous {
             do {
                 // Try to link to an existing anonymous account
@@ -66,27 +66,27 @@ struct FirebaseAuthService: AuthService {
                 }
             }
         }
-        
+
         // Otherwise sign in to new account
         let result = try await Auth.auth().signIn(with: credential)
         return result.asAuthInfo
     }
-    
+
     func signOut() throws {
         try Auth.auth().signOut()
     }
-    
+
     func deleteAccount() async throws {
         guard let user = Auth.auth().currentUser else {
             throw AuthError.userNotFound
         }
-        
+
         try await user.delete()
     }
-    
+
     enum AuthError: LocalizedError {
         case userNotFound
-        
+
         var errorDescription: String? {
             switch self {
             case .userNotFound:
@@ -97,7 +97,7 @@ struct FirebaseAuthService: AuthService {
 }
 
 extension AuthDataResult {
-    
+
     var asAuthInfo: (user: UserAuthInfo, isNewUser: Bool) {
         let user = UserAuthInfo(user: user)
         let isNewUser = additionalUserInfo?.isNewUser ?? true

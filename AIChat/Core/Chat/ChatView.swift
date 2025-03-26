@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ChatView: View {
-    
+
     @State private var chatMessages: [ChatMessageModel] = ChatMessageModel.mocks
     @State private var avatar: AvatarModel? = .mock
     @State private var currentUser: UserModel? = .mock
@@ -18,7 +18,7 @@ struct ChatView: View {
     @State private var showAlert: AnyAppAlert?
     @State private var showChatSettings: AnyAppAlert?
     @State private var showProfileModal: Bool = false
-    
+
     var avatarId: String = AvatarModel.mock.avatarId
 
     var body: some View {
@@ -45,7 +45,7 @@ struct ChatView: View {
             }
         }
     }
-    
+
     private var scrollViewSection: some View {
         ScrollView {
             LazyVStack(spacing: 24) {
@@ -69,7 +69,7 @@ struct ChatView: View {
         .animation(.default, value: chatMessages.count)
         .animation(.default, value: scrollPosition)
     }
-    
+
     private var textFieldSection: some View {
         TextField("Say something...", text: $textFieldText)
             .keyboardType(.alphabet)
@@ -90,7 +90,7 @@ struct ChatView: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: 100)
                         .fill(Color(uiColor: .systemBackground))
-                    
+
                     RoundedRectangle(cornerRadius: 100)
                         .stroke(.gray.opacity(0.3), lineWidth: 1)
                 }
@@ -99,7 +99,7 @@ struct ChatView: View {
             .padding(.vertical, 6)
             .background(Color(uiColor: .secondarySystemBackground))
     }
-    
+
     private func profileModal(avatar: AvatarModel) -> some View {
         ProfileModalView(
             imageName: avatar.profileImageName,
@@ -113,15 +113,15 @@ struct ChatView: View {
             .padding(40)
             .transition(.slide)
     }
-    
+
     private func onSendMessagePressed() {
         guard let currentUser else { return }
-        
+
         let content = textFieldText
-        
+
         do {
             try TextValidationHelper.checkIfTextIsValid(text: content)
-        
+
             let message = ChatMessageModel(
                 id: UUID().uuidString,
                 chatId: UUID().uuidString,
@@ -131,15 +131,15 @@ struct ChatView: View {
                 dateCreated: .now
             )
             chatMessages.append(message)
-            
+
             scrollPosition = message.id
-            
+
             textFieldText = ""
         } catch {
             showAlert = AnyAppAlert(error: error)
         }
     }
-    
+
     private func onChatSettingsPressed() {
         showChatSettings = AnyAppAlert(
             title: "",
@@ -148,17 +148,17 @@ struct ChatView: View {
                 AnyView(
                     Group {
                         Button("Report User / Chat", role: .destructive) {
-                            
+
                         }
                         Button("Delete Chat", role: .destructive) {
-                            
+
                         }
                     }
                 )
             }
         )
     }
-    
+
     private func onAvatarImagePressed() {
         showProfileModal = true
     }

@@ -8,19 +8,20 @@
 import SwiftUI
 
 struct OnboardingCompletedView: View {
-    
+
     @Environment(AppState.self) private var root
-    
+    @Environment(UserManager.self) private var userManager
+
     @State private var isCompletingProfileSetup: Bool = false
     var selectedColor: Color = .orange
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Setup complete!")
                 .font(.largeTitle)
                 .fontWeight(.semibold)
                 .foregroundStyle(selectedColor)
-            
+
             Text("We've set up your profile and you're ready to start chatting.")
                 .font(.title)
                 .fontWeight(.medium)
@@ -37,13 +38,13 @@ struct OnboardingCompletedView: View {
         .padding(24)
         .toolbar(.hidden, for: .navigationBar)
     }
-    
+
     func onFinishButtonPressed() {
         isCompletingProfileSetup = true
         Task {
-            try await Task.sleep(for: .seconds(3))
+            let hex = selectedColor.asHex()
+            try await userManager.markOnboardingCompleteForCurrentUser(profileColorHex: hex)
             isCompletingProfileSetup = false
-            // try await saveUserProfile(color: selectedColor)
             root.updateViewState(showTabBarView: true)
         }
     }
@@ -51,5 +52,6 @@ struct OnboardingCompletedView: View {
 
 #Preview {
     OnboardingCompletedView(selectedColor: .mint)
+        .environment(UserManager(service: MockUserService()))
         .environment(AppState())
 }

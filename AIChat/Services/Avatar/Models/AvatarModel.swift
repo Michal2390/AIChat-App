@@ -8,7 +8,7 @@
 import Foundation
 
 struct AvatarModel: Hashable {
-    
+
     let avatarId: String
     let name: String?
     let characterOption: CharacterOption?
@@ -17,7 +17,7 @@ struct AvatarModel: Hashable {
     let profileImageName: String?
     let authorId: String?
     let dateCreated: Date?
-    
+
     init(
         avatarId: String,
         name: String? = nil,
@@ -41,11 +41,11 @@ struct AvatarModel: Hashable {
     var characterDescription: String {
         AvatarDescriptionBuilder(avatar: self).characterDescription
     }
-    
+
     static var mock: Self {
         mocks[0]
     }
-    
+
     static var mocks: [Self] {
         [
             AvatarModel(avatarId: UUID().uuidString, name: "Alpha", characterOption: .alien, characterAction: .fighting, characterLocation: .space, profileImageName: Constants.randomImage, authorId: UUID().uuidString, dateCreated: .now),

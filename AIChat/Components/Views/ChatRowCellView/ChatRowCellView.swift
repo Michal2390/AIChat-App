@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct ChatRowCellView: View {
-    
+
     var imageName: String? = Constants.randomImage
     var headline: String? = "Alpha"
     var subheadline: String? = "This is the last message in the chat"
     var hasNewChat: Bool = true
-    
+
     var body: some View {
         HStack(spacing: 8) {
             ZStack {
@@ -26,7 +26,7 @@ struct ChatRowCellView: View {
             }
             .frame(width: 50, height: 50)
             .clipShape(Circle())
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 if let headline {
                     Text(headline)
@@ -38,7 +38,7 @@ struct ChatRowCellView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            
+
             if hasNewChat {
                 Text("NEW")
                     .badgeButton()            }
@@ -50,7 +50,7 @@ struct ChatRowCellView: View {
 }
 
 #Preview {
-    
+
     ZStack {
         Color.gray.ignoresSafeArea()
         List {

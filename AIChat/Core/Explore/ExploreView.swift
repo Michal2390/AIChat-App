@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct ExploreView: View {
-    
+
     @State private var featuredAvatars: [AvatarModel] = AvatarModel.mocks
     @State private var categories: [CharacterOption] = CharacterOption.allCases
     @State private var popularAvatars: [AvatarModel] = AvatarModel.mocks
-    
+
     @State private var path: [NavigationPathOption] = []
-    
+
     var body: some View {
         NavigationStack(path: $path) {
             List {
@@ -26,7 +26,7 @@ struct ExploreView: View {
             .navigationDestinationForCoreModule(path: $path)
         }
     }
-    
+
     private var featuredSection: some View {
         Section {
             ZStack {
@@ -46,7 +46,7 @@ struct ExploreView: View {
             Text("Featured")
         }
     }
-    
+
     private var categorySection: some View {
         Section {
             ZStack {
@@ -76,7 +76,7 @@ struct ExploreView: View {
             Text("Categories")
         }
     }
-    
+
     private var popularSection: some View {
         Section {
             ForEach(popularAvatars, id: \.self) { avatar in
@@ -94,11 +94,11 @@ struct ExploreView: View {
             Text("Popular")
         }
     }
-    
+
     private func onAvatarPressed(avatar: AvatarModel) {
         path.append(.chat(avatarId: avatar.avatarId))
     }
-    
+
     private func onCategoryPressed(category: CharacterOption, imageName: String) {
         path.append(.category(category: category, imageName: imageName))
     }

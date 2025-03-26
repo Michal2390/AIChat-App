@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct ChatBubbleViewBuilder: View {
-    
+
     var message: ChatMessageModel = .mock
     var isCurrentUser: Bool = false
     var imageName: String?
     var onImagePressed: (() -> Void)?
-    
+
     var body: some View {
         ZStack {
             ChatBubbleView(

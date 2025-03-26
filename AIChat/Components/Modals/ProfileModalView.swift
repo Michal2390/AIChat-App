@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct ProfileModalView: View {
-    
+
     var imageName: String? = Constants.randomImage
     var title: String? = "Alpha"
     var subtitle: String? = "Alien"
     var headline: String? = "An alien in the park"
     var onXMarkPressed: () -> Void = {}
-    
+
     var body: some View {
         VStack(spacing: 0) {
             if let imageName {
@@ -24,7 +24,7 @@ struct ProfileModalView: View {
                 )
                 .aspectRatio(1, contentMode: .fit)
             }
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 if let title {
                     Text(title)
@@ -65,7 +65,7 @@ struct ProfileModalView: View {
 #Preview("Modal w/ Image") {
     ZStack {
         Color.gray.ignoresSafeArea()
-        
+
         ProfileModalView()
             .padding(40 )
     }
@@ -74,7 +74,7 @@ struct ProfileModalView: View {
 #Preview("Modal w/o Image") {
     ZStack {
         Color.gray.ignoresSafeArea()
-        
+
         ProfileModalView(imageName: nil)
             .padding(40)
     }

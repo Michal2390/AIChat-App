@@ -9,11 +9,11 @@ import SwiftUI
 import SDWebImageSwiftUI
 
 struct ImageLoaderView: View {
-    
+
     var urlString: String = Constants.randomImage
     var resizingMode: ContentMode = .fill
     var forceTransitionAnimation: Bool = false
-    
+
     var body: some View {
         Rectangle()
             .opacity(0.0001)
@@ -35,6 +35,6 @@ struct ImageLoaderView: View {
     ImageLoaderView()
         .frame(width: 100, height: 200)
         .anyButton(.highlight) {
-            
+
         }
 }

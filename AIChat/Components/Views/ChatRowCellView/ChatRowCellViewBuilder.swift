@@ -8,22 +8,22 @@
 import SwiftUI
 
 struct ChatRowCellViewBuilder: View {
-    
+
     var currentUserId: String? = ""
     var chat: ChatModel = .mock
     var getAvatar: () async -> AvatarModel?
     var getLastChatMessage: () async -> ChatMessageModel?
-    
+
     @State private var avatar: AvatarModel?
     @State private var lastChatMessage: ChatMessageModel?
-    
+
     @State private var didLoadAvatar: Bool = false
     @State private var didLoadChatMessage: Bool = false
-    
+
     private var isLoading: Bool {
         (didLoadAvatar && didLoadChatMessage) ? false : true
     }
-    
+
     private var subheadline: String? {
         if isLoading {
             return "loading..."
@@ -31,10 +31,10 @@ struct ChatRowCellViewBuilder: View {
         if avatar == nil && lastChatMessage == nil {
             return "Error loading data."
         }
-        
+
         return lastChatMessage?.content
     }
-    
+
     var body: some View {
         ChatRowCellView(
             imageName: avatar?.profileImageName,
@@ -52,7 +52,7 @@ struct ChatRowCellViewBuilder: View {
             didLoadChatMessage = true
         }
     }
-    
+
     private var hasNewChat: Bool {
         guard let lastChatMessage, let currentUserId else { return false }
         return lastChatMessage.hasBeenSeenBy(userId: currentUserId)
@@ -68,13 +68,13 @@ struct ChatRowCellViewBuilder: View {
             try? await Task.sleep(for: .seconds(5))
             return .mock
         })
-        
+
         ChatRowCellViewBuilder(chat: .mock, getAvatar: {
             return .mock
         }, getLastChatMessage: {
             return .mock
         })
-        
+
         ChatRowCellViewBuilder(chat: .mock, getAvatar: {
             return nil
         }, getLastChatMessage: {
