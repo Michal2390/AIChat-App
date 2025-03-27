@@ -10,7 +10,7 @@ struct AsyncCallToActionButton: View {
 
     var isLoading: Bool = false
     var title: String = "Save"
-    var action: () -> Void
+    let action: () -> Void
 
     var body: some View {
         ZStack {

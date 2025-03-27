@@ -16,9 +16,10 @@ struct AIChatApp: App {
     var body: some Scene {
         WindowGroup {
                 AppView()
-                    .environment(delegate.dependencies.userManager)
-                    .environment(delegate.dependencies.authManager)
                     .environment(delegate.dependencies.aiManager)
+                    .environment(delegate.dependencies.avatarManager)
+                    .environment(delegate.dependencies.userManager)
+                    .environment(delegate.dependencies.authManager) // putting AUTH the lowest to be sure its the parent most dependency as it is the most important one
         }
     }
 }
@@ -39,10 +40,12 @@ struct Dependencies {
     let authManager: AuthManager
     let userManager: UserManager
     let aiManager: AIManager
+    let avatarManager: AvatarManager
     
     init() {
         authManager = AuthManager(service: FirebaseAuthService())
         userManager = UserManager(services: ProductionUserServices())
         aiManager = AIManager(service: OpenAIService())
+        avatarManager = AvatarManager(service: FirebaseAvatarService())
     }
 }

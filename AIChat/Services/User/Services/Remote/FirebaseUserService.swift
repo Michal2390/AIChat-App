@@ -16,8 +16,8 @@ struct FirebaseUserService: RemoteUserService {
     }
 
     func saveUser(user: UserModel) async throws {
-        // try collection.document(user.userId).setData(from: user, merge: true) - usual approach
-        try await collection.setDocument(document: user) // SwiftfulFirestore convenience method approach because on UserModel we set StringIdentifiable with var id - we can use this
+        try collection.document(user.userId).setData(from: user, merge: true) // - usual approach
+        // try await collection.setDocument(document: user) // SwiftfulFirestore convenience method approach because on UserModel we set StringIdentifiable with var id - we can use this
     }
 
     func markOnboardingCompleted(userId: String, profileColorHex: String) async throws {

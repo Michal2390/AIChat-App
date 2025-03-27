@@ -11,6 +11,8 @@ struct CreateAvatarView: View {
     
     @Environment(\.dismiss) private var dismiss
     @Environment(AIManager.self) private var aiManager
+    @Environment(AuthManager.self) private var authManager
+    @Environment(AvatarManager.self) private var avatarManager
     
     @State private var avatarName: String = ""
     @State private var characterOption: CharacterOption = .default
@@ -19,6 +21,8 @@ struct CreateAvatarView: View {
     
     @State private var isGenerating: Bool = false
     @State private var generatedImage: UIImage?
+    @State private var showAlert: AnyAppAlert?
+    
     @State private var isSaving: Bool = false
     
     var body: some View {
@@ -35,6 +39,7 @@ struct CreateAvatarView: View {
                     backButton
                 }
             }
+            .showCustomAlert(alert: $showAlert)
         }
     }
     
@@ -166,22 +171,41 @@ struct CreateAvatarView: View {
     }
     
     private func onSavePressed() {
+        guard let generatedImage else { return } // this should never fail
+
         isSaving = true
         
         Task {
-            try? await Task.sleep(for: .seconds(3))
-            dismiss()
+            do {
+                try TextValidationHelper.checkIfTextIsValid(text: avatarName, minimumCharacterCount: 3)
+                let uid = try authManager.getAuthId()
+                
+                let avatar = AvatarModel(
+                    avatarId: UUID().uuidString,
+                    name: avatarName,
+                    characterOption: characterOption,
+                    characterAction: characterAction,
+                    characterLocation: characterLocation,
+                    profileImageName: nil,
+                    authorId: uid,
+                    dateCreated: .now
+                )
+
+                try await avatarManager.createAvatar(avatar: avatar, image: generatedImage)
+                
+                // Dismiss screen
+                dismiss()
+            } catch {
+                showAlert = AnyAppAlert(error: error)
+            }
             isSaving = false
         }
-    }
-    
-    private func saveAvatar() async {
-        try? await Task.sleep(for: .seconds(2))
-        dismiss()
     }
 }
 
 #Preview {
     CreateAvatarView()
         .environment(AIManager(service: MockAIService()))
+        .environment(AvatarManager(service: MockAvatarService()))
+        .environment(AuthManager(service: MockAuthService(user: .mock())))
 }
