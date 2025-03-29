@@ -51,5 +51,4 @@ class AvatarManager: AvatarService {
     func createAvatar(avatar: AvatarModel, image: UIImage) async throws {
         try await service.createAvatar(avatar: avatar, image: image)
     }
-    
 }
