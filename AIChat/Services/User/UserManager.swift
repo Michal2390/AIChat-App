@@ -10,7 +10,7 @@ import SwiftUI
 @Observable
 class UserManager {
 
-    private let local: LocalUserPersistance
+    private let local: LocalUserPersistence
     private let remote: RemoteUserService
     private(set) var currentUser: UserModel?
     private var currentUserListener: ListenerRegistration?

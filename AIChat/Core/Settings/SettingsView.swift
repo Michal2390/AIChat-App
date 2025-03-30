@@ -12,6 +12,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AuthManager.self) private var authManager
     @Environment(UserManager.self) private var userManager
+    @Environment(AvatarManager.self) private var avatarManager
     @Environment(AppState.self) private var appState
 
     @State private var isPremium: Bool = false
@@ -134,7 +135,7 @@ struct SettingsView: View {
         Task {
             do {
                 try authManager.signOut()
-                try userManager.signOut()
+                userManager.signOut()
 
                 await dismissScreen()
             } catch {
@@ -167,9 +168,13 @@ struct SettingsView: View {
     private func onDeleteAccountConfirmed() {
         Task {
             do {
-                try await authManager.deleteAccount()
-                try await userManager.deleteCurrentUser()
-
+                let uid = try authManager.getAuthId()
+                async let deleteAuth: () = authManager.deleteAccount()
+                async let deleteUser: () = userManager.deleteCurrentUser()
+                async let deleteAvatars: () = avatarManager.removeAuthorIdFromAllUserAvatars(userId: uid)
+                
+                let (_, _, _) = await (try deleteAuth, try deleteUser, try deleteAvatars)
+                
                 await dismissScreen()
             } catch {
                 showAlert = AnyAppAlert(error: error)

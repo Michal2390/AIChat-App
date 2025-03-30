@@ -1,5 +1,5 @@
 //
-//  SwiftDataLocalAvatarPersistance.swift
+//  SwiftDataLocalAvatarPersistence.swift
 //  AIChat
 //
 //  Created by Michal Fereniec on 30/03/2025.
@@ -8,7 +8,7 @@ import SwiftUI
 import SwiftData
 
 @MainActor
-struct SwiftDataLocalAvatarPersistance: LocalAvatarPersistance {
+struct SwiftDataLocalAvatarPersistence: LocalAvatarPersistence {
     
     private let container: ModelContainer // Using ModelContainer is better than @View as u cant test them and they dont work well with architecture
     private var mainContext: ModelContext {

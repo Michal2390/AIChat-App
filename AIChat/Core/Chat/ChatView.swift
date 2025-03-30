@@ -183,6 +183,6 @@ struct ChatView: View {
 #Preview {
     NavigationStack {
         ChatView()
-            .environment(AvatarManager(remote: MockAvatarService(), local: MockLocalAvatarPersistance()))
+            .environment(AvatarManager(remote: MockAvatarService(), local: MockLocalAvatarPersistence()))
     }
 }
