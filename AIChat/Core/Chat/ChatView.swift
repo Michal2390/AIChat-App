@@ -56,7 +56,7 @@ struct ChatView: View {
             let avatar = try await avatarManager.getAvatar(id: avatarId)
             
             self.avatar = avatar
-            try? avatarManager.addRecentAvatar(avatar: avatar) // optional try here because I dont want to display an error if saving locally avatar will fail
+            try? await avatarManager.addRecentAvatar(avatar: avatar) // optional try here because I dont want to display an error if saving locally avatar will fail
         } catch {
             print("Error loading avatar: \(error)")
         }

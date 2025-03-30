@@ -21,7 +21,8 @@ struct AvatarModel: Hashable, Codable, StringIdentifiable {
     private(set) var profileImageName: String? // adding private(set) var here makes it still var but we can change this variable only from within the variable, so that the setter is private
     let authorId: String?
     let dateCreated: Date?
-
+    let clickCount: Int?
+    
     init(
         avatarId: String,
         name: String? = nil,
@@ -30,7 +31,8 @@ struct AvatarModel: Hashable, Codable, StringIdentifiable {
         characterLocation: CharacterLocation? = nil,
         profileImageName: String? = nil,
         authorId: String? = nil,
-        dateCreated: Date? = nil
+        dateCreated: Date? = nil,
+        clickCount: Int? = nil
     ) {
         self.avatarId = avatarId
         self.name = name
@@ -40,6 +42,7 @@ struct AvatarModel: Hashable, Codable, StringIdentifiable {
         self.profileImageName = profileImageName
         self.authorId = authorId
         self.dateCreated = dateCreated
+        self.clickCount = clickCount
     }
 
     var characterDescription: String {
@@ -59,6 +62,7 @@ struct AvatarModel: Hashable, Codable, StringIdentifiable {
         case profileImageName = "profile_image_name"
         case authorId = "author_id"
         case dateCreated = "date_created"
+        case clickCount = "click_count"
     }
 
     static var mock: Self {
@@ -67,11 +71,11 @@ struct AvatarModel: Hashable, Codable, StringIdentifiable {
 
     static var mocks: [Self] {
         [
-            AvatarModel(avatarId: UUID().uuidString, name: "Alpha", characterOption: .alien, characterAction: .fighting, characterLocation: .space, profileImageName: Constants.randomImage, authorId: UUID().uuidString, dateCreated: .now),
-            AvatarModel(avatarId: UUID().uuidString, name: "Beta", characterOption: .cat, characterAction: .drinking, characterLocation: .forest, profileImageName: Constants.randomImage, authorId: UUID().uuidString, dateCreated: .now),
-            AvatarModel(avatarId: UUID().uuidString, name: "Gamma", characterOption: .man, characterAction: .relaxing, characterLocation: .park, profileImageName: Constants.randomImage, authorId: UUID().uuidString, dateCreated: .now),
-            AvatarModel(avatarId: UUID().uuidString, name: "Delta", characterOption: .woman, characterAction: .shopping, characterLocation: .mall, profileImageName: Constants.randomImage, authorId: UUID().uuidString, dateCreated: .now),
-            AvatarModel(avatarId: UUID().uuidString, name: "Omega", characterOption: .dog, characterAction: .sleeping, characterLocation: .desert, profileImageName: Constants.randomImage, authorId: UUID().uuidString, dateCreated: .now)
+            AvatarModel(avatarId: UUID().uuidString, name: "Alpha", characterOption: .alien, characterAction: .fighting, characterLocation: .space, profileImageName: Constants.randomImage, authorId: UUID().uuidString, dateCreated: .now, clickCount: 10),
+            AvatarModel(avatarId: UUID().uuidString, name: "Beta", characterOption: .cat, characterAction: .drinking, characterLocation: .forest, profileImageName: Constants.randomImage, authorId: UUID().uuidString, dateCreated: .now, clickCount: 69),
+            AvatarModel(avatarId: UUID().uuidString, name: "Gamma", characterOption: .man, characterAction: .relaxing, characterLocation: .park, profileImageName: Constants.randomImage, authorId: UUID().uuidString, dateCreated: .now, clickCount: 420),
+            AvatarModel(avatarId: UUID().uuidString, name: "Delta", characterOption: .woman, characterAction: .shopping, characterLocation: .mall, profileImageName: Constants.randomImage, authorId: UUID().uuidString, dateCreated: .now, clickCount: 23),
+            AvatarModel(avatarId: UUID().uuidString, name: "Omega", characterOption: .dog, characterAction: .sleeping, characterLocation: .desert, profileImageName: Constants.randomImage, authorId: UUID().uuidString, dateCreated: .now, clickCount: 5)
         ]
     }
 }
