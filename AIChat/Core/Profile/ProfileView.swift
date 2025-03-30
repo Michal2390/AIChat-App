@@ -152,7 +152,5 @@ struct ProfileView: View {
 
 #Preview {
     ProfileView()
-        .environment(AppState())
-        .environment(UserManager(services: MockUserServices(user: .mock)))
-        .environment(AvatarManager(remote: MockAvatarService(), local: MockLocalAvatarPersistance()))
+        .previewEnvironment()
 }

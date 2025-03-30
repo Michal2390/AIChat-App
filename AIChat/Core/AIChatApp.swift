@@ -49,3 +49,14 @@ struct Dependencies {
         avatarManager = AvatarManager(remote: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistance())
     }
 }
+
+extension View {
+    func previewEnvironment(isSignedIn: Bool = true) -> some View {
+        self
+            .environment(AIManager(service: MockAIService()))
+            .environment(UserManager(services: MockUserServices(user: isSignedIn ? .mock : nil)))
+            .environment(AuthManager(service: MockAuthService(user: isSignedIn ? .mock() : nil)))
+            .environment(AvatarManager(remote: MockAvatarService(), local: MockLocalAvatarPersistance()))
+            .environment(AppState())
+    }
+}
