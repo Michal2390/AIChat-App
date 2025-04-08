@@ -198,4 +198,3 @@ struct ExploreView: View {
     ExploreView()
         .environment(AvatarManager(remote: MockAvatarService(delay: 10)))
 }
-//for commit
