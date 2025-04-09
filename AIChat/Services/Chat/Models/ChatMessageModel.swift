@@ -10,7 +10,7 @@ struct ChatMessageModel: Identifiable {
     let id: String
     let chatId: String
     let authorId: String?
-    let content: String?
+    let content: AIChatModel?
     let seenByIds: [String]?
     let dateCreated: Date?
     
@@ -18,7 +18,7 @@ struct ChatMessageModel: Identifiable {
         id: String,
         chatId: String,
         authorId: String? = nil,
-        content: String? = nil,
+        content: AIChatModel? = nil,
         seenByIds: [String]? = nil,
         dateCreated: Date? = nil
     ) {
@@ -42,10 +42,52 @@ struct ChatMessageModel: Identifiable {
     static var mocks: [Self] {
         let now = Date()
         return [
-            ChatMessageModel(id: "mock_Message_chat_1", chatId: "1", authorId: "user1", content: "Hello, how are u my G?", seenByIds: ["user2", "user3"], dateCreated: now),
-            ChatMessageModel(id: "mock_Message_chat_2", chatId: "2", authorId: "user2", content: "I am feeling thank you", seenByIds: ["user1"], dateCreated: now.addingTimeInterval(minutes: -5)),
-            ChatMessageModel(id: "mock_Message_chat_3", chatId: "3", authorId: "user3", content: "Anything is possible - and Jayson Tatum has Aura", seenByIds: ["user1", "user2", "user4"], dateCreated: now.addingTimeInterval(hours: -1)),
-            ChatMessageModel(id: "mock_Message_chat_4", chatId: "1", authorId: "user1", content: "Luka in Lakers? Bro thats crazy", seenByIds: nil, dateCreated: now.addingTimeInterval(hours: -5, minutes: -30))
+            ChatMessageModel(
+                id: "mock_Message_chat_1",
+                chatId: "1",
+                authorId: "user1",
+                content: AIChatModel(role: .user, content: "Did u see that Luka is in the Lakers?"),
+                seenByIds: [
+                    "user2",
+                    "user3"
+                ],
+                dateCreated: now
+            ),
+            ChatMessageModel(
+                id: "mock_Message_chat_2",
+                chatId: "2",
+                authorId: "user2",
+                content: AIChatModel(role: .assistant, content: "Damn bro, didnt see that yet, my G"),
+                seenByIds: ["user1"],
+                dateCreated: now.addingTimeInterval(
+                    minutes: -5
+                )
+            ),
+            ChatMessageModel(
+                id: "mock_Message_chat_3",
+                chatId: "3",
+                authorId: "user3",
+                content: AIChatModel(role: .user, content: "Anything is possible - and Jayson Tatum has aura"),
+                seenByIds: [
+                    "user1",
+                    "user2",
+                    "user4"
+                ],
+                dateCreated: now.addingTimeInterval(
+                    hours: -1
+                )
+            ),
+            ChatMessageModel(
+                id: "mock_Message_chat_4",
+                chatId: "1",
+                authorId: "user1",
+                content: AIChatModel(role: .assistant, content: "Cant agree more, but still Lakers in 5 bro"),
+                seenByIds: nil,
+                dateCreated: now.addingTimeInterval(
+                    hours: -5,
+                    minutes: -30
+                )
+            )
         ]
     }
 }
