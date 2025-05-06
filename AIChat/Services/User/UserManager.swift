@@ -43,7 +43,7 @@ class UserManager {
             }
         }
     }
-    
+
     private func saveCurrentUserLocally() {
         Task {
             do {

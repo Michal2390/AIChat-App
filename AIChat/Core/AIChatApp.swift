@@ -27,7 +27,7 @@ struct AIChatApp: App {
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     var dependencies: Dependencies! // in this case `!` means we sure want to create and set our dependencies BEFORE we want to fetch and get value
-    
+
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         FirebaseApp.configure()
         dependencies = Dependencies()
@@ -43,7 +43,7 @@ struct Dependencies {
     let aiManager: AIManager
     let avatarManager: AvatarManager
     let chatManager: ChatManager
-    
+
     init() {
         authManager = AuthManager(service: FirebaseAuthService())
         userManager = UserManager(services: ProductionUserServices())

@@ -6,14 +6,14 @@
 //
 import Foundation
 
-struct ChatMessageModel: Identifiable {
+struct ChatMessageModel: Identifiable, Codable {
     let id: String
     let chatId: String
     let authorId: String?
     let content: AIChatModel?
     let seenByIds: [String]?
     let dateCreated: Date?
-    
+
     init(
         id: String,
         chatId: String,
@@ -29,12 +29,21 @@ struct ChatMessageModel: Identifiable {
         self.seenByIds = seenByIds
         self.dateCreated = dateCreated
     }
-    
+
     func hasBeenSeenBy(userId: String) -> Bool {
         guard let seenByIds else { return false }
         return seenByIds.contains(userId)
     }
-    
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case chatId = "chat_id"
+        case authorId = "author_id"
+        case content
+        case seenByIds = "seen_by_ids"
+        case dateCreated = "date_created"
+    }
+
     static func newUserMessage(chatId: String, userId: String, message: AIChatModel) -> Self {
         ChatMessageModel(
             id: UUID().uuidString,
@@ -45,7 +54,7 @@ struct ChatMessageModel: Identifiable {
             dateCreated: .now
         )
     }
-    
+
     static func newAIMessage(chatId: String, avatarId: String, message: AIChatModel) -> Self {
         ChatMessageModel(
             id: UUID().uuidString,
@@ -56,18 +65,18 @@ struct ChatMessageModel: Identifiable {
             dateCreated: .now
         )
     }
-    
+
     static var mock: Self {
         mocks[0]
     }
-    
+
     static var mocks: [Self] {
         let now = Date()
         return [
             ChatMessageModel(
                 id: "mock_Message_chat_1",
                 chatId: "1",
-                authorId: "user1",
+                authorId: UserAuthInfo.mock().uid,
                 content: AIChatModel(role: .user, content: "Did u see that Luka is in the Lakers?"),
                 seenByIds: [
                     "user2",
@@ -78,7 +87,7 @@ struct ChatMessageModel: Identifiable {
             ChatMessageModel(
                 id: "mock_Message_chat_2",
                 chatId: "2",
-                authorId: "user2",
+                authorId: AvatarModel.mock.avatarId,
                 content: AIChatModel(role: .assistant, content: "Damn bro, didnt see that yet, my G"),
                 seenByIds: ["user1"],
                 dateCreated: now.addingTimeInterval(
@@ -88,7 +97,7 @@ struct ChatMessageModel: Identifiable {
             ChatMessageModel(
                 id: "mock_Message_chat_3",
                 chatId: "3",
-                authorId: "user3",
+                authorId: UserAuthInfo.mock().uid,
                 content: AIChatModel(role: .user, content: "Anything is possible - and Jayson Tatum has aura"),
                 seenByIds: [
                     "user1",
@@ -102,7 +111,7 @@ struct ChatMessageModel: Identifiable {
             ChatMessageModel(
                 id: "mock_Message_chat_4",
                 chatId: "1",
-                authorId: "user1",
+                authorId: AvatarModel.mock.avatarId,
                 content: AIChatModel(role: .assistant, content: "Cant agree more, but still Lakers in 5 bro"),
                 seenByIds: nil,
                 dateCreated: now.addingTimeInterval(

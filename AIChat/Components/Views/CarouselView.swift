@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct CarouselView<Content: View, T: Hashable>: View {
-    
+
     var items: [T]
     @ViewBuilder var content: (T) -> Content
     @State private var selection: T?
-    
+
     var body: some View {
         VStack(spacing: 12) {
             ScrollView(.horizontal) {
@@ -35,12 +35,12 @@ struct CarouselView<Content: View, T: Hashable>: View {
             .scrollPosition(id: $selection)
             .onChange(of: items.count) { _, _ in
                 updateSelectionIfNeeded()
-                 
+
             }
             .onAppear {
                 updateSelectionIfNeeded()
             }
-            
+
             HStack(spacing: 8) {
                 ForEach(items, id: \.self) { item in
                     Circle()
@@ -51,7 +51,7 @@ struct CarouselView<Content: View, T: Hashable>: View {
             .animation(.linear, value: selection)
         }
     }
-    
+
     private func updateSelectionIfNeeded() {
         if selection == nil || selection == items.last {
             selection = items.first

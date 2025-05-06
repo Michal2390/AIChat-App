@@ -172,9 +172,9 @@ struct SettingsView: View {
                 async let deleteAuth: () = authManager.deleteAccount()
                 async let deleteUser: () = userManager.deleteCurrentUser()
                 async let deleteAvatars: () = avatarManager.removeAuthorIdFromAllUserAvatars(userId: uid)
-                
+
                 let (_, _, _) = await (try deleteAuth, try deleteUser, try deleteAvatars)
-                
+
                 await dismissScreen()
             } catch {
                 showAlert = AnyAppAlert(error: error)

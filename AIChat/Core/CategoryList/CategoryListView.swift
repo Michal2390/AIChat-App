@@ -10,13 +10,13 @@ import SwiftUI
 struct CategoryListView: View {
 
     @Environment(AvatarManager.self) private var avatarManager
-    
+
     @Binding var path: [NavigationPathOption]
     var category: CharacterOption = .alien
     var imageName: String = Constants.randomImage
     @State private var avatars: [AvatarModel] = []
     @State private var isLoading: Bool = true
-    
+
     @State private var showAlert: AnyAppAlert?
 
     var body: some View {
@@ -28,7 +28,7 @@ struct CategoryListView: View {
                 cornerRadius: 0
             )
             .removeListRowFormatting()
-            
+
             if isLoading {
                 ProgressView()
                     .padding(40)
@@ -72,7 +72,7 @@ struct CategoryListView: View {
         }
         isLoading = false
     }
-    
+
     private func onAvatarPressed(avatar: AvatarModel) {
         path.append(.chat(avatarId: avatar.avatarId))
     }

@@ -10,7 +10,7 @@ import SwiftUI
 struct ChatsView: View {
 
     @Environment(AvatarManager.self) private var avatarManager
-    
+
     @State private var chats: [ChatModel] = ChatModel.mocks
     @State private var recentsAvatars: [AvatarModel] = AvatarModel.mocks
 
@@ -31,7 +31,7 @@ struct ChatsView: View {
             }
         }
     }
-    
+
     private func loadRecentAvatars() {
         do {
             recentsAvatars = try avatarManager.getRecentAvatars()

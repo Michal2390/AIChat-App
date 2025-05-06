@@ -10,14 +10,14 @@ import SwiftUI
 struct ExploreView: View {
 
     @Environment(AvatarManager.self) private var avatarManager
-    
+
     @State private var categories: [CharacterOption] = CharacterOption.allCases
-    
+
     @State private var featuredAvatars: [AvatarModel] = []
     @State private var popularAvatars: [AvatarModel] = []
     @State private var isLoadingFeatured: Bool = true
     @State private var isLoadingPopular: Bool = true
-    
+
     @State private var path: [NavigationPathOption] = []
 
     var body: some View {
@@ -33,11 +33,11 @@ struct ExploreView: View {
                     }
                     .removeListRowFormatting()
                 }
-                
+
                 if !featuredAvatars.isEmpty {
                     featuredSection
                 }
-                
+
                 if !popularAvatars.isEmpty {
                     categorySection
                     popularSection
@@ -52,15 +52,15 @@ struct ExploreView: View {
                 await loadPopularAvatars()
             }
         }
-    } 
-    
+    }
+
     private var loadingIndicator: some View {
         ProgressView()
             .tint(.accent)
             .padding(40)
             .frame(maxWidth: .infinity)
     }
-    
+
     private var errorMessageView: some View {
         VStack(alignment: .center, spacing: 8) {
             Text("Error")
@@ -68,7 +68,7 @@ struct ExploreView: View {
             Text("Please check your internet connection and try again")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-            
+
             Button("Try again") {
                 onTryAgainPressed()
             }
@@ -78,28 +78,28 @@ struct ExploreView: View {
         .multilineTextAlignment(.center)
         .padding(40)
     }
-    
+
     private func onTryAgainPressed() {
         isLoadingPopular = true
         isLoadingFeatured = true
         Task { await loadFeaturedAvatars() }
         Task { await loadPopularAvatars() }
     }
-    
+
     private func loadFeaturedAvatars() async {
         // If already loaded, there is no need to fetch again
         guard featuredAvatars.isEmpty else { return }
-        
+
         do {
             featuredAvatars = try await avatarManager.getFeaturedAvatars()
         } catch {
             print("Error loading featured avatars: \(error)")
         }
     }
-    
+
     private func loadPopularAvatars() async {
         guard popularAvatars.isEmpty else { return }
-        
+
         do {
             popularAvatars = try await avatarManager.getPopularAvatars()
         } catch {

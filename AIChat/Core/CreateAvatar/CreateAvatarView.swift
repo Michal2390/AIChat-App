@@ -8,23 +8,23 @@
 import SwiftUI
 
 struct CreateAvatarView: View {
-    
+
     @Environment(\.dismiss) private var dismiss
     @Environment(AIManager.self) private var aiManager
     @Environment(AuthManager.self) private var authManager
     @Environment(AvatarManager.self) private var avatarManager
-    
+
     @State private var avatarName: String = ""
     @State private var characterOption: CharacterOption = .default
     @State private var characterAction: CharacterAction = .default
     @State private var characterLocation: CharacterLocation = .default
-    
+
     @State private var isGenerating: Bool = false
     @State private var generatedImage: UIImage?
     @State private var showAlert: AnyAppAlert?
-    
+
     @State private var isSaving: Bool = false
-    
+
     var body: some View {
         NavigationStack {
             List {
@@ -42,7 +42,7 @@ struct CreateAvatarView: View {
             .showCustomAlert(alert: $showAlert)
         }
     }
-    
+
     private var backButton: some View {
         Image(systemName: "xmark")
             .font(.title2)
@@ -51,7 +51,7 @@ struct CreateAvatarView: View {
                 onBackButtonPressed()
             }
     }
-    
+
     private var nameSection: some View {
         Section {
             TextField("Player 1", text: $avatarName)
@@ -59,7 +59,7 @@ struct CreateAvatarView: View {
             Text("Name your avatar*")
         }
     }
-    
+
     private var attributesSection: some View {
         Section {
             VStack(spacing: 4) {
@@ -71,7 +71,7 @@ struct CreateAvatarView: View {
                 } label: {
                     Text("is a...")
                 }
-                
+
                 Picker(selection: $characterAction) {
                     ForEach(CharacterAction.allCases, id: \.self) { option in
                         Text(option.rawValue.capitalized)
@@ -80,7 +80,7 @@ struct CreateAvatarView: View {
                 } label: {
                     Text("that is...")
                 }
-                
+
                 Picker(selection: $characterLocation) {
                     ForEach(CharacterLocation.allCases, id: \.self) { option in
                         Text(option.rawValue.capitalized)
@@ -106,13 +106,13 @@ struct CreateAvatarView: View {
                             onGenerateImagePressed()
                         }
                         .opacity(isGenerating ? 0 : 1)
-                    
+
                     ProgressView()
                         .tint(.accent)
                         .opacity(isGenerating ? 1 : 0)
                 }
                 .disabled(isGenerating || avatarName.isEmpty)
-            
+
                 Circle()
                     .fill(Color.secondary.opacity(0.3))
                     .overlay {
@@ -129,7 +129,7 @@ struct CreateAvatarView: View {
         }
         .removeListRowFormatting()
     }
-    
+
     private var saveSection: some View {
         Section {
             AsyncCallToActionButton(
@@ -143,14 +143,14 @@ struct CreateAvatarView: View {
             .disabled(generatedImage == nil)
         }
     }
-    
+
     private func onBackButtonPressed() {
         dismiss()
     }
-    
+
     private func onGenerateImagePressed() {
         isGenerating = true
-        
+
         Task {
             do {
                 let prompt = AvatarDescriptionBuilder(
@@ -159,27 +159,27 @@ struct CreateAvatarView: View {
                     characterLocation: characterLocation
                 )
                 .characterDescription
-                
+
                 generatedImage = try await aiManager.generateImage(input: prompt)
-                
+
             } catch {
              print("Error generating image: \(error)")
             }
-            
+
             isGenerating = false
         }
     }
-    
+
     private func onSavePressed() {
         guard let generatedImage else { return } // this should never fail
 
         isSaving = true
-        
+
         Task {
             do {
                 try TextValidationHelper.checkIfTextIsValid(text: avatarName, minimumCharacterCount: 3)
                 let uid = try authManager.getAuthId()
-                
+
                 let avatar = AvatarModel.newAvatar(
                     name: avatarName,
                     option: characterOption,
@@ -189,7 +189,7 @@ struct CreateAvatarView: View {
                 )
 
                 try await avatarManager.createAvatar(avatar: avatar, image: generatedImage)
-                
+
                 // Dismiss screen
                 dismiss()
             } catch {

@@ -12,7 +12,7 @@ struct ProfileView: View {
     @Environment(UserManager.self) private var userManager
     @Environment(AvatarManager.self) private var avatarManager
     @Environment(AuthManager.self) private var authManager
-    
+
     @State private var showSettingsView: Bool = false
     @State private var showCreateAvatarView: Bool = false
     @State private var currentUser: UserModel?
@@ -57,7 +57,7 @@ struct ProfileView: View {
 
     private func loadData() async {
         self.currentUser = userManager.currentUser
-        
+
         do {
             let uid = try authManager.getAuthId()
             myAvatars = try await avatarManager.getAvatarsForAuthor(userId: uid)
@@ -149,7 +149,7 @@ struct ProfileView: View {
     private func onDeleteAvatar(indexSet: IndexSet) {
         guard let index = indexSet.first else { return }
         let avatar = myAvatars[index]
-        
+
         Task {
             do {
                 try await avatarManager.removeAuthorIdFromAvatar(avatarId: avatar.id)

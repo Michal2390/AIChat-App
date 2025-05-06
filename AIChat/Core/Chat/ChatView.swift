@@ -14,18 +14,19 @@ struct ChatView: View {
     @Environment(AvatarManager.self) private var avatarManager
     @Environment(ChatManager.self) private var chatManager
     @Environment(AIManager.self) private var aiManager
-    
+
     @State private var chatMessages: [ChatMessageModel] = ChatMessageModel.mocks
     @State private var avatar: AvatarModel?
     @State private var currentUser: UserModel?
     @State private var chat: ChatModel?
-    
+
     @State private var textFieldText: String = ""
     @State private var scrollPosition: String?
 
     @State private var showAlert: AnyAppAlert?
     @State private var showChatSettings: AnyAppAlert?
     @State private var showProfileModal: Bool = false
+    @State private var isGeneratingResponse: Bool = false
 
     var avatarId: String = AvatarModel.mock.avatarId
 
@@ -38,11 +39,17 @@ struct ChatView: View {
         .toolbarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Image(systemName: "ellipsis")
-                    .padding(8)
-                    .anyButton {
-                        onChatSettingsPressed()
+                HStack {
+                    if isGeneratingResponse {
+                        ProgressView()
                     }
+                    
+                    Image(systemName: "ellipsis")
+                        .padding(8)
+                        .anyButton {
+                            onChatSettingsPressed()
+                        }
+                }
             }
         }
         .showCustomAlert(type: .confirmationDialog, alert: $showChatSettings)
@@ -59,7 +66,7 @@ struct ChatView: View {
             loadCurrentUser()
         }
     }
-    
+
     private func loadCurrentUser() {
         currentUser = userManager.currentUser
     }
@@ -67,14 +74,14 @@ struct ChatView: View {
     private func loadAvatar() async {
         do {
             let avatar = try await avatarManager.getAvatar(id: avatarId)
-            
+
             self.avatar = avatar
             try? await avatarManager.addRecentAvatar(avatar: avatar) // optional try here because I dont want to display an error if saving locally avatar will fail
         } catch {
             print("Error loading avatar: \(error)")
         }
     }
-    
+
     private var scrollViewSection: some View {
         ScrollView {
             LazyVStack(spacing: 24) {
@@ -149,35 +156,63 @@ struct ChatView: View {
 
         Task {
             do {
+                // Get userId
                 let uid = try authManager.getAuthId()
+
+                // Validate textField text
                 try TextValidationHelper.checkIfTextIsValid(text: content)
-                
+
+                // If chat is nil, then create a new chat
                 if chat == nil {
-                    // If chat is nil, then create a new chat
-                    let newChat = ChatModel.new(userId: uid, avatarId: avatarId)
-                    try await chatManager.createNewChat(chat: newChat)
-                    chat = newChat
+                    chat = try await createNewChat(uid: uid)
                 }
                 
+                // If there is no chat, thro error which should never happen
+                guard let chat else {
+                    throw ChatViewError.noChat
+                }
+
+                // Create User chat
                 let newChatMessage = AIChatModel(role: .user, content: content)
-                let chatId = UUID().uuidString
-                let message = ChatMessageModel.newUserMessage(chatId: chatId, userId: uid, message: newChatMessage)
+                let message = ChatMessageModel.newUserMessage(chatId: chat.id, userId: uid, message: newChatMessage)
+                
+                // Upload User chat
+                try await chatManager.addChatMessage(chatId: chat.id, message: message)
                 chatMessages.append(message)
-
+                
+                // Clear text field & scroll to bottom
                 scrollPosition = message.id
-
                 textFieldText = ""
-                
+
+                // Generate AI response
+                isGeneratingResponse = true
                 let aiChats = chatMessages.compactMap({ $0.content })
+                let response = try await aiManager.generateText(chats: aiChats)
                 
-                let response = try await aiManager.generateText(chats: aiChats)                
-                let newAIMessage = ChatMessageModel.newAIMessage(chatId: chatId, avatarId: avatarId, message: response)
+                // Create AI chat
+                let newAIMessage = ChatMessageModel.newAIMessage(chatId: chat.id, avatarId: avatarId, message: response)
+                
+                // Upload AI chat
+                try await chatManager.addChatMessage(chatId: chat.id, message: newAIMessage)
                 chatMessages.append(newAIMessage)
-                
+
             } catch {
                 showAlert = AnyAppAlert(error: error)
             }
+            
+            isGeneratingResponse = false
         }
+    }
+    
+    enum ChatViewError: Error {
+        case noChat
+    }
+
+    private func createNewChat(uid: String) async throws -> ChatModel {
+        let newChat = ChatModel.new(userId: uid, avatarId: avatarId)
+        try await chatManager.createNewChat(chat: newChat)
+        return newChat
+
     }
 
     private func onChatSettingsPressed() {
@@ -204,10 +239,25 @@ struct ChatView: View {
     }
 }
 
-#Preview {
+#Preview("Working chat") {
     NavigationStack {
         ChatView()
-            .environment(AvatarManager(remote: MockAvatarService(), local: MockLocalAvatarPersistence()))
+            .previewEnvironment()
+    }
+}
+
+#Preview("Slow AI generation") {
+    NavigationStack {
+        ChatView()
+            .environment(AIManager(service: MockAIService(delay: 10)))
+            .previewEnvironment()
+    }
+}
+
+#Preview("Failed AI generation") {
+    NavigationStack {
+        ChatView()
+            .environment(AIManager(service: MockAIService(delay: 2, showError: true)))
             .previewEnvironment()
     }
 }
