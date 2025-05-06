@@ -641,8 +641,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SwiftfulThinking/SwiftfulFirestore";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 11.0.2;
+				kind = exactVersion;
+				version = 11.0.1;
 			};
 		};
 		861848292DA61D030045426B /* XCRemoteSwiftPackageReference "OpenAI" */ = {

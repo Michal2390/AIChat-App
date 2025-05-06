@@ -27,8 +27,8 @@ struct FirebaseUserService: RemoteUserService {
         ])
     }
 
-    func streamUser(userId: String) -> AsyncThrowingStream<UserModel, Error> {
-        collection.streamDocument(id: userId)
+    func streamUser(userId: String, onListenerConfigured: @escaping (ListenerRegistration) -> Void ) -> AsyncThrowingStream<UserModel, Error> {
+        collection.streamDocument(id: userId, onListenerConfigured: onListenerConfigured)
     }
 
     func deleteUser(userId: String) async throws {

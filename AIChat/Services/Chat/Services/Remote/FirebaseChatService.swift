@@ -21,6 +21,15 @@ struct FirebaseChatService: ChatService {
         try collection.document(chat.id).setData(from: chat, merge: true)
     }
 
+    func getChat(userId: String, avatarId: String) async throws -> ChatModel? {
+//        let result: [ChatModel] = try await collection
+//            .whereField(ChatModel.CodingKeys.userId.rawValue, isEqualTo: userId)
+//            .whereField(ChatModel.CodingKeys.avatarId.rawValue, isEqualTo: avatarId)
+//            .getAllDocuments()
+        // return result.first
+        try await collection.getDocument(id: ChatModel.chatId(userId: userId, avatarId: avatarId))
+    }
+    
     func addChatMessage(chatId: String, message: ChatMessageModel) async throws {
         // add the message to chat sub-collection
         try messagesCollection(chatId: chatId).document(message.id).setData(from: message, merge: true)
@@ -28,5 +37,9 @@ struct FirebaseChatService: ChatService {
         try await collection.document(chatId).updateData([
             ChatModel.CodingKeys.dateModified.rawValue: Date.now
         ])
+    }
+    
+    func streamChatMessages(chatId: String, onListenerConfigured: @escaping (ListenerRegistration) -> Void ) -> AsyncThrowingStream<[ChatMessageModel], Error> {
+        messagesCollection(chatId: chatId).streamAllDocuments(onListenerConfigured: onListenerConfigured)
     }
 }

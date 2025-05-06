@@ -33,7 +33,9 @@ class UserManager {
 
         Task {
             do {
-                for try await value in remote.streamUser(userId: userId) {
+                for try await value in remote.streamUser(userId: userId, onListenerConfigured: { listener in
+                    self.currentUserListener = listener
+                }) {
                     self.currentUser = value
                     self.saveCurrentUserLocally()
                     print("Successfully listened to user: \(value.userId)")

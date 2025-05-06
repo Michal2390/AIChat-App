@@ -5,8 +5,9 @@
 //  Created by Michal Fereniec on 18/02/2025.
 //
 import Foundation
+import IdentifiableByString
 
-struct ChatModel: Identifiable, Codable {
+struct ChatModel: Identifiable, Codable, StringIdentifiable {
     let id: String
     let userId: String
     let avatarId: String
@@ -21,13 +22,13 @@ struct ChatModel: Identifiable, Codable {
         case dateModified = "date_modified"
     }
 
-    static var mock: Self {
-        mocks[0]
+    static func chatId(userId: String, avatarId: String) -> String {
+        "\(userId)_\(avatarId)"
     }
 
     static func new(userId: String, avatarId: String) -> Self {
         ChatModel(
-            id: "\(userId)_\(avatarId)",
+            id: chatId(userId: userId, avatarId: avatarId),
             userId: userId,
             avatarId: avatarId,
             dataCreated: .now,
@@ -35,6 +36,10 @@ struct ChatModel: Identifiable, Codable {
         )
     }
 
+    static var mock: Self {
+        mocks[0]
+    }
+    
     static var mocks: [Self] {
         let now = Date()
         return [
