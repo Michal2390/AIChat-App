@@ -263,7 +263,6 @@ struct ChatView: View {
         }
         
         return newChat
-
     }
 
     private func onChatSettingsPressed() {
