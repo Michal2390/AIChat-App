@@ -25,10 +25,13 @@ struct MockAvatarService: RemoteAvatarService {
     }
 
     func createAvatar(avatar: AvatarModel, image: UIImage) async throws {
+        try await Task.sleep(for: .seconds(delay))
         try tryShowError()
     }
 
     func getAvatar(id: String) async throws -> AvatarModel {
+        try await Task.sleep(for: .seconds(delay))
+
         try tryShowError()
         guard let avatar = avatars.first(where: { $0.id == id }) else {
             throw URLError(.noPermissionsToReadFile)
