@@ -14,6 +14,7 @@ struct ChatView: View {
     @Environment(AvatarManager.self) private var avatarManager
     @Environment(ChatManager.self) private var chatManager
     @Environment(AIManager.self) private var aiManager
+    @Environment(\.dismiss) private var dismiss
 
     @State private var chatMessages: [ChatMessageModel] = []
     @State private var avatar: AvatarModel?
@@ -273,15 +274,51 @@ struct ChatView: View {
                 AnyView(
                     Group {
                         Button("Report User / Chat", role: .destructive) {
-
+                            onReportChatPressed()
                         }
                         Button("Delete Chat", role: .destructive) {
-
+                            onDeleteChatPressed()
                         }
                     }
                 )
             }
         )
+    }
+    
+    private func onReportChatPressed() {
+        Task {
+            do {
+                let uid = try authManager.getAuthId()
+                let chatId = try getChatId()
+                try await chatManager.reportChat(chatId: chatId, userId: uid)
+                
+                showAlert = AnyAppAlert(
+                    title: "🚨 Reported 🚨",
+                    subtitle: "We will review this chat shortly. You may leave the chat at any time. Thanks for bringing this to out attention!"
+                )
+            } catch {
+                showAlert = AnyAppAlert(
+                    title: "Something went wrong",
+                    subtitle: "Please check your internet connection my G!"
+                )
+            }
+        }
+    }
+    
+    private func onDeleteChatPressed() {
+        Task {
+            do {
+                let chatId = try getChatId()
+                try await chatManager.deleteChat(chatId: chatId)
+                
+                dismiss()
+            } catch {
+                showAlert = AnyAppAlert(
+                    title: "Something went wrong",
+                    subtitle: "Please check your internet connection my G!"
+                )
+            }
+        }
     }
 
     private func onAvatarImagePressed() {

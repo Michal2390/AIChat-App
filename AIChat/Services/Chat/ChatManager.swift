@@ -6,15 +6,6 @@
 //
 import SwiftUI
 
-protocol ChatService: Sendable {
-    func createNewChat(chat: ChatModel) async throws
-    func getChat(userId: String, avatarId: String) async throws -> ChatModel?
-    func getAllChats(userId: String) async throws -> [ChatModel]
-    func addChatMessage(chatId: String, message: ChatMessageModel) async throws
-    func getLastChatMessage(chatId: String) async throws -> ChatMessageModel?
-    func streamChatMessages(chatId: String, onListenerConfigured: @escaping (ListenerRegistration) -> Void ) -> AsyncThrowingStream<[ChatMessageModel], Error>
-}
-
 @MainActor
 @Observable
 class ChatManager {
@@ -47,5 +38,18 @@ class ChatManager {
     
     func streamChatMessages(chatId: String, onListenerConfigured: @escaping (ListenerRegistration) -> Void ) -> AsyncThrowingStream<[ChatMessageModel], Error> {
         service.streamChatMessages(chatId: chatId, onListenerConfigured: onListenerConfigured)
+    }
+    
+    func deleteChat(chatId: String) async throws {
+        try await service.deleteChat(chatId: chatId)
+    }
+    
+    func deleteAllChatsForUser(userId: String) async throws {
+        try await service.deleteAllChatsForUser(userId: userId)
+    }
+    
+    func reportChat(chatId: String, userId: String) async throws {
+        let report = ChatReportModel.new(chatId: chatId, userId: userId)
+        try await service.reportChat(report: report)
     }
 }

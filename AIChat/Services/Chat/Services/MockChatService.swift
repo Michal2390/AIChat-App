@@ -58,4 +58,16 @@ struct MockChatService: ChatService {
             
         }
     }
+    
+    func deleteChat(chatId: String) async throws {
+
+    }
+    
+    func deleteAllChatsForUser(userId: String) async throws {
+
+    }
+    
+    func reportChat(report: ChatReportModel) async throws {
+        
+    }
 }
