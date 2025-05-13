@@ -36,7 +36,7 @@ class ChatManager {
         try await service.getLastChatMessage(chatId: chatId)
     }
     
-    func streamChatMessages(chatId: String, onListenerConfigured: @escaping (ListenerRegistration) -> Void ) -> AsyncThrowingStream<[ChatMessageModel], Error> {
+    func streamChatMessages(chatId: String, onListenerConfigured: @escaping (AnyListener) -> Void ) -> AsyncThrowingStream<[ChatMessageModel], Error> {
         service.streamChatMessages(chatId: chatId, onListenerConfigured: onListenerConfigured)
     }
     

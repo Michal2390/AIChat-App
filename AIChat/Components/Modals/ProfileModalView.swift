@@ -16,49 +16,51 @@ struct ProfileModalView: View {
     var onXMarkPressed: () -> Void = {}
 
     var body: some View {
-        VStack(spacing: 0) {
-            if let imageName {
-                ImageLoaderView(
-                    urlString: imageName,
-                    forceTransitionAnimation: true // I want to force usage of .drawingGroup only on this Modal View and not everywhere in my app
-                )
-                .aspectRatio(1, contentMode: .fit)
-            }
-
-            VStack(alignment: .leading, spacing: 4) {
-                if let title {
-                    Text(title)
+            VStack(spacing: 0) {
+                ZStack(alignment: .topTrailing) {
+                    VStack {
+                        if let imageName {
+                            ImageLoaderView(
+                                urlString: imageName,
+                                forceTransitionAnimation: true // I want to force usage of .drawingGroup only on this Modal View and not everywhere in my app
+                            )
+                            .aspectRatio(1, contentMode: .fit)
+                        }
+                    }
+                    
+                    Image(systemName: "xmark.circle.fill")
                         .font(.title)
-                        .fontWeight(.semibold)
+                        .foregroundStyle(Color.black)
+                        .padding(4)
+                        .tappableBackground()
+                        .anyButton {
+                            onXMarkPressed()
+                        }
+                        .padding(8)
                 }
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.title3)
-                        .foregroundStyle(.secondary)
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    if let title {
+                        Text(title)
+                            .font(.title)
+                            .fontWeight(.semibold)
+                    }
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                    }
+                    if let headline {
+                        Text(headline)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-                if let headline {
-                    Text(headline)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
+                .padding(24)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(24)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .background(.thinMaterial)
-        .cornerRadius(16)
-        .overlay(
-            Image(systemName: "xmark.circle.fill")
-                .font(.title)
-                .foregroundStyle(Color.black)
-                .padding(4)
-                .tappableBackground()
-                .anyButton {
-                    onXMarkPressed()
-                }
-                .padding(8)
-            , alignment: .topTrailing
-        )
+            .background(.thinMaterial)
+            .cornerRadius(16)
     }
 }
 

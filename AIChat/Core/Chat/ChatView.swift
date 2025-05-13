@@ -28,7 +28,7 @@ struct ChatView: View {
     @State private var showChatSettings: AnyAppAlert?
     @State private var showProfileModal: Bool = false
     @State private var isGeneratingResponse: Bool = false
-    @State private var messageListener: ListenerRegistration?
+    @State private var messageListener: AnyListener?
 
     var avatarId: String = AvatarModel.mock.avatarId
 
@@ -72,7 +72,7 @@ struct ChatView: View {
             loadCurrentUser()
         }
         .onDisappear {
-            messageListener?.remove()
+            messageListener?.listener.remove()
         }
     }
 
@@ -112,7 +112,7 @@ struct ChatView: View {
             let chatId = try getChatId()
             
             for try await value in chatManager.streamChatMessages(chatId: chatId, onListenerConfigured: { listener in
-                messageListener?.remove()
+                messageListener?.listener.remove()
                 messageListener = listener
             }) {
                 chatMessages = value.sortedByKeyPath(keyPath: \.dateCreatedCalculated)

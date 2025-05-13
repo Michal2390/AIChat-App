@@ -58,8 +58,10 @@ struct FirebaseChatService: ChatService {
         return messages.first
     }
     
-    func streamChatMessages(chatId: String, onListenerConfigured: @escaping (ListenerRegistration) -> Void ) -> AsyncThrowingStream<[ChatMessageModel], Error> {
-        messagesCollection(chatId: chatId).streamAllDocuments(onListenerConfigured: onListenerConfigured)
+    func streamChatMessages(chatId: String, onListenerConfigured: @escaping (AnyListener) -> Void ) -> AsyncThrowingStream<[ChatMessageModel], Error> {
+        messagesCollection(chatId: chatId).streamAllDocuments { listener in
+            onListenerConfigured(AnyListener(listener: listener))
+        }
     }
     
     func deleteChat(chatId: String) async throws {

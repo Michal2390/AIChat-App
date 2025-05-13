@@ -7,14 +7,22 @@
 
 import Foundation
 
-struct MockChatService: ChatService {
+@MainActor
+class MockChatService: ChatService {
     
     let chats: [ChatModel]
+    @Published var messages: [ChatMessageModel]
     let delay: Double
     let showError: Bool
     
-    init(chats: [ChatModel] = ChatModel.mocks, delay: Double = 0.0, showError: Bool = false) {
+    init(
+        chats: [ChatModel] = ChatModel.mocks,
+        messages: [ChatMessageModel] = ChatMessageModel.mocks,
+        delay: Double = 0.0,
+        showError: Bool = false
+    ) {
         self.chats = chats
+        self.messages = messages
         self.delay = delay
         self.showError = showError
     }
@@ -44,7 +52,9 @@ struct MockChatService: ChatService {
         return chats
     }
     
-    func addChatMessage(chatId: String, message: ChatMessageModel) async throws { }
+    func addChatMessage(chatId: String, message: ChatMessageModel) async throws {
+        messages.append(message)
+    }
     
     func getLastChatMessage(chatId: String) async throws -> ChatMessageModel? {
         try await Task.sleep(for: .seconds(delay))
@@ -53,9 +63,15 @@ struct MockChatService: ChatService {
         return ChatMessageModel.mocks.randomElement()
     }
     
-    func streamChatMessages(chatId: String, onListenerConfigured: @escaping (ListenerRegistration) -> Void ) -> AsyncThrowingStream<[ChatMessageModel], Error> {
-        AsyncThrowingStream { _ in
+    func streamChatMessages(chatId: String, onListenerConfigured: @escaping (AnyListener) -> Void) -> AsyncThrowingStream<[ChatMessageModel], Error> {
+        AsyncThrowingStream { continuation in
+            continuation.yield(messages)
             
+            Task {
+                for await value in $messages.values {
+                    continuation.yield(value)
+                }
+            }
         }
     }
     
