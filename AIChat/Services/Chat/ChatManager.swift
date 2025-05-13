@@ -32,6 +32,10 @@ class ChatManager {
         try await service.addChatMessage(chatId: chatId, message: message)
     }
     
+    func markChatMessageAsSeen(chatId: String, messageId: String, userId: String) async throws {
+        try await service.markChatMessageAsSeen(chatId: chatId, messageId: messageId, userId: userId)
+    }
+    
     func getLastChatMessage(chatId: String) async throws -> ChatMessageModel? {
         try await service.getLastChatMessage(chatId: chatId)
     }
