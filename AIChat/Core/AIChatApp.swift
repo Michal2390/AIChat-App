@@ -29,22 +29,41 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     var dependencies: Dependencies! // in this case `!` means we sure want to create and set our dependencies BEFORE we want to fetch and get value
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        FirebaseApp.configure()
+        
+        let config: BuildConfiguration
         
         #if MOCK
-        dependencies = Dependencies(config: .mock(isSignedIn: true))
+        config = .mock(isSignedIn: true)
         #elseif DEV
-        dependencies = Dependencies(config: .dev)
+        config = .dev
         #else
-        dependencies = Dependencies(config: .prod)
+        config = .prod
         #endif
-
-    return true
+        
+        config.configure()
+        dependencies = Dependencies(config: config)
+        return true
   }
 }
 
 enum BuildConfiguration {
     case mock(isSignedIn: Bool), dev, prod
+    
+    func configure() {
+        switch self {
+        case .mock(let isSignedIn):
+            // Mock build does NOT run Firebase
+            break
+        case .dev:
+            let plist = Bundle.main.path(forResource: "GoogleService-Info-Dev", ofType: "plist")! // this absolutely needs to be so its ok to force unwrap
+            let options = FirebaseOptions(contentsOfFile: plist)!
+            FirebaseApp.configure(options: options)
+        case .prod:
+            let plist = Bundle.main.path(forResource: "GoogleService-Info-Dev", ofType: "plist")!
+            let options = FirebaseOptions(contentsOfFile: plist)!
+            FirebaseApp.configure(options: options)
+        }
+    }
 }
 
 @MainActor
