@@ -59,7 +59,7 @@ enum BuildConfiguration {
             let options = FirebaseOptions(contentsOfFile: plist)!
             FirebaseApp.configure(options: options)
         case .prod:
-            let plist = Bundle.main.path(forResource: "GoogleService-Info-Dev", ofType: "plist")!
+            let plist = Bundle.main.path(forResource: "GoogleService-Info-Prod", ofType: "plist")!
             let options = FirebaseOptions(contentsOfFile: plist)!
             FirebaseApp.configure(options: options)
         }
