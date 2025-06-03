@@ -41,6 +41,21 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		869B92AD2DEEF64000A9259D /* AIChat-Mock */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "AIChat-Mock";
+			sourceTree = "<group>";
+		};
+		869B92BE2DEEF64200A9259D /* AIChat-MockTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "AIChat-MockTests";
+			sourceTree = "<group>";
+		};
+		869B92C82DEEF64200A9259D /* AIChat-MockUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "AIChat-MockUITests";
+			sourceTree = "<group>";
+		};
 		86A637762D2F9B530087E26B /* AIChat */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AIChat;
@@ -97,6 +112,9 @@
 				86A637762D2F9B530087E26B /* AIChat */,
 				86A637872D2F9B550087E26B /* AIChatTests */,
 				86A637912D2F9B560087E26B /* AIChatUITests */,
+				869B92AD2DEEF64000A9259D /* AIChat-Mock */,
+				869B92BE2DEEF64200A9259D /* AIChat-MockTests */,
+				869B92C82DEEF64200A9259D /* AIChat-MockUITests */,
 				86B038C72D93782C00AD8651 /* Frameworks */,
 				86A637752D2F9B530087E26B /* Products */,
 			);
