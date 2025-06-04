@@ -21,6 +21,7 @@ struct AIChatApp: App {
                     .environment(delegate.dependencies.avatarManager)
                     .environment(delegate.dependencies.userManager)
                     .environment(delegate.dependencies.authManager) // putting AUTH the lowest to be sure its the parent most dependency as it is the most important one
+                    .environment(delegate.dependencies.logManager)
         }
     }
 }
@@ -73,6 +74,7 @@ struct Dependencies {
     let aiManager: AIManager
     let avatarManager: AvatarManager
     let chatManager: ChatManager
+    let logManager: LogManager
 
     init(config: BuildConfiguration) {
         
@@ -83,18 +85,27 @@ struct Dependencies {
             aiManager = AIManager(service: MockAIService())
             avatarManager = AvatarManager(remote: MockAvatarService(), local: MockLocalAvatarPersistence())
             chatManager = ChatManager(service: MockChatService())
+            logManager = LogManager(services: [
+                ConsoleService()
+            ])
         case .dev:
             authManager = AuthManager(service: FirebaseAuthService())
             userManager = UserManager(services: ProductionUserServices())
             aiManager = AIManager(service: OpenAIService())
             avatarManager = AvatarManager(remote: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
+            logManager = LogManager(services: [
+                ConsoleService()
+            ])
         case .prod:
             authManager = AuthManager(service: FirebaseAuthService())
             userManager = UserManager(services: ProductionUserServices())
             aiManager = AIManager(service: OpenAIService())
             avatarManager = AvatarManager(remote: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
+            logManager = LogManager(services: [
+                
+            ])
         }
     }
 }
@@ -108,5 +119,6 @@ extension View {
             .environment(AuthManager(service: MockAuthService(user: isSignedIn ? .mock() : nil)))
             .environment(AvatarManager(remote: MockAvatarService(), local: MockLocalAvatarPersistence()))
             .environment(AppState())
+            .environment(LogManager(services: []))
     }
 }

@@ -11,6 +11,7 @@ struct AppView: View {
 
     @Environment(AuthManager.self) private var authManager
     @Environment(UserManager.self) private var userManager
+    @Environment(LogManager.self) private var logManager
     @State var appState: AppState = AppState()
 
     var body: some View {
@@ -26,6 +27,10 @@ struct AppView: View {
         .environment(appState)
         .task {
             await checkUserStatus()
+        }
+        .onAppear {
+            logManager.identifyUser(userId: "bydlak123", name: "Ziom", email: "KochamFistaszki@blabla.com")
+            logManager.addUserProperties(dict: UserModel.mock.eventParameters)
         }
         .onChange(of: appState.showTabbar) { _, showTabBar in
             if !showTabBar {
@@ -60,7 +65,7 @@ struct AppView: View {
                 // Log in
                 try await userManager.logIn(auth: result.user, isNewUser: result.isNewUser)
             } catch {
-                print("Failed to sig in anonymously and log in: \(error)")
+                print("Failed to sign in anonymously and log in: \(error)")
                 try? await Task.sleep(for: .seconds(5))
                 await checkUserStatus()
             }
