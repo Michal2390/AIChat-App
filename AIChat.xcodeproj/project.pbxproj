@@ -635,6 +635,8 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.michalkoks.AIChat;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = "com.michalkoks.AIChat-MF";
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = "com.michalkoks.AIChat-MF";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;
@@ -673,6 +675,8 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.michalkoks.AIChat;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = "com.michalkoks.AIChat-MF";
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = "com.michalkoks.AIChat-MF";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;

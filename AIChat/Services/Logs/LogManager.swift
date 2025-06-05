@@ -46,7 +46,7 @@ Log User Properties
     }
     
     func deleteUserProfile() {
-        var string = """
+        let string = """
 Delete User PRofile
 """
         print(string)
