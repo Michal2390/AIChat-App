@@ -1,5 +1,5 @@
 //
-//  errrr.swift
+//  Error+EXT.swift
 //  AIChat
 //
 //  Created by Michal Fereniec on 14/07/2025.

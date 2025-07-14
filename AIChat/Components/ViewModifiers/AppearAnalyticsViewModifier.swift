@@ -33,7 +33,7 @@ struct AppearAnalyticsViewModifier: ViewModifier {
             }
         }
         
-        var parameters: [String: Any] {
+        var parameters: [String: Any]? {
             nil
         }
         
@@ -49,4 +49,3 @@ extension View {
         modifier(AppearAnalyticsViewModifier(name: name))
     }
 }
-
