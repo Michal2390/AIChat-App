@@ -472,9 +472,9 @@ struct ChatView: View {
         
         var type: LogType {
             switch self {
-            case .loadChatFail, .sendMessageFail:
+            case .loadChatFail, .sendMessageFail, .loadMessagesFail:
                 return .warning
-            case .loadAvatarFail, .loadMessagesFail, .messageSeenFail, .reportChatFail, .deleteChatFail:
+            case .loadAvatarFail, .messageSeenFail, .reportChatFail, .deleteChatFail:
                 return .severe
             default:
                 return .analytic

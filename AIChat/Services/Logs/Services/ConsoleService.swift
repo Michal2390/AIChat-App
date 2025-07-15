@@ -96,7 +96,7 @@ struct ConsoleService: LogService {
     
     func deleteUserProfile() {
         let string = """
-📈 Delete User PRofile
+📈 Delete User Profile
 """
         logger.log(level: LogType.info, message: string)
 }

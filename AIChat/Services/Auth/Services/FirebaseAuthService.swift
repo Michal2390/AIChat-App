@@ -25,6 +25,10 @@ struct FirebaseAuthService: AuthService {
             onListenerAttached(listener)
         }
     }
+    
+    func removeAuthenticatedUserListener(listener: any NSObjectProtocol) {
+        Auth.auth().removeStateDidChangeListener(listener)
+    }
 
     func getAuthenticatedUser() -> UserAuthInfo? {
         if let user = Auth.auth().currentUser {
@@ -80,17 +84,53 @@ struct FirebaseAuthService: AuthService {
         guard let user = Auth.auth().currentUser else {
             throw AuthError.userNotFound
         }
-
-        try await user.delete()
+        
+        do {
+            try await user.delete()
+        } catch let error as NSError {
+            
+            let authError = AuthErrorCode(rawValue: error.code)
+            switch authError {
+            case .requiresRecentLogin:
+                // Try to reauthenticate user
+                try await reauthenticateUser(error: error)
+                
+                // Reauthentication succesful
+                return try await user.delete()
+            default:
+                throw error
+            }
+        }
+    }
+    
+    private func reauthenticateUser(error: Error) async throws {
+        guard let user = Auth.auth().currentUser, let providerId = user.providerData.first?.providerID else {
+            throw AuthError.userNotFound
+        }
+        
+        switch providerId {
+        case "apple.com":
+            let result = try await signInApple()
+            
+            guard user.uid == result.user.uid else {
+                throw AuthError.reauthAccountChanged
+            }
+        default:
+            throw error
+        }
+        
     }
 
     enum AuthError: LocalizedError {
         case userNotFound
+        case reauthAccountChanged
 
         var errorDescription: String? {
             switch self {
             case .userNotFound:
                 return "Current authenticated user not found"
+            case .reauthAccountChanged:
+                return "Reauthentication switched accounts. Please check your account"
             }
         }
     }

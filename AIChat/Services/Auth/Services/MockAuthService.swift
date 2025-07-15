@@ -19,6 +19,10 @@ struct MockAuthService: AuthService {
             continuation.yield(currentUser)
         }
     }
+    
+    func removeAuthenticatedUserListener(listener: any NSObjectProtocol) {
+        
+    }
 
     func getAuthenticatedUser() -> UserAuthInfo? {
         currentUser
