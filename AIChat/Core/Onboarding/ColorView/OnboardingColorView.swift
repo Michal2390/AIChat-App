@@ -28,6 +28,7 @@ struct OnboardingColorView: View {
         })
         .animation(.bouncy, value: selectedColor)
         .toolbar(.hidden, for: .navigationBar)
+        .screenAppearAnalytics(name: "OnboardingColorView")
     }
     
     private var colorGrid: some View {

@@ -10,6 +10,7 @@ import SwiftUI
 struct ExploreView: View {
 
     @Environment(AvatarManager.self) private var avatarManager
+    @Environment(LogManager.self) private var logManager
 
     @State private var categories: [CharacterOption] = CharacterOption.allCases
 
@@ -53,6 +54,7 @@ struct ExploreView: View {
                 }
             }
             .navigationTitle("Explore")
+            .screenAppearAnalytics(name: "ExploreView")
             .toolbar(content: {
                 ToolbarItem(placement: .topBarLeading) {
                     if showDevSettingsButton {
@@ -81,8 +83,64 @@ struct ExploreView: View {
             }
     }
     
+    enum Event: LoggableEvent {
+        case devSettingsPressed
+        case tryAgainPressed
+        case loadFeaturedAvatarsStart
+        case loadFeaturedAvatarsSuccess(avatarCount: Int)
+        case loadFeaturedAvatarsFail(error: Error)
+        case loadPopularAvatarsStart
+        case loadPopularAvatarsSuccess(avatarCount: Int)
+        case loadPopularAvatarsFail(error: Error)
+        case avatarPressed(avatar: AvatarModel)
+        case categoryPressed(category: CharacterOption)
+        
+        var eventName: String {
+            switch self {
+            case .devSettingsPressed:              return "ExploreView_DevSettings_Pressed"
+            case .tryAgainPressed:                 return "ExploreView_TryAgain_Pressed"
+            case .loadFeaturedAvatarsStart:        return "ExploreView_LoadAvatars_Start"
+            case .loadFeaturedAvatarsSuccess:      return "ExploreView_LoadAvatars_Success"
+            case .loadFeaturedAvatarsFail:         return "ExploreView_LoadAvatars_Fail"
+            case .loadPopularAvatarsStart:         return "ExploreView_PopularAvatars_Start"
+            case .loadPopularAvatarsSuccess:       return "ExploreView_PopularAvatars_Success"
+            case .loadPopularAvatarsFail:          return "ExploreView_PopularAvatars_Fail"
+            case .avatarPressed:                   return "ExploreView_Avatar_Pressed"
+            case .categoryPressed:                 return "ExploreView_Category_Pressed"
+            }
+        }
+        var parameters: [String: Any]? {
+            switch self {
+            case .loadFeaturedAvatarsFail(error: let error):
+                return error.eventParameters
+            case .loadFeaturedAvatarsSuccess(avatarCount: let avatarCount), .loadPopularAvatarsSuccess(avatarCount: let avatarCount):
+                return [
+                    "avatars_count": avatarCount
+                ]
+            case .avatarPressed(avatar: let avatar):
+                return avatar.eventParameters
+            case .categoryPressed(category: let category):
+                return [
+                    "category": category.rawValue
+                ]
+            default:
+                return nil
+            }
+        }
+        
+        var type: LogType {
+            switch self {
+            case .loadFeaturedAvatarsFail, .loadPopularAvatarsFail:
+                return .severe
+            default:
+                return .analytic
+            }
+        }
+    }
+    
     private func onDevSettingsPressed() {
         showDevSettings = true
+        logManager.trackEvent(event: Event.devSettingsPressed)
     }
 
     private var loadingIndicator: some View {
@@ -113,6 +171,7 @@ struct ExploreView: View {
     private func onTryAgainPressed() {
         isLoadingPopular = true
         isLoadingFeatured = true
+        logManager.trackEvent(event: Event.tryAgainPressed)
         Task { await loadFeaturedAvatars() }
         Task { await loadPopularAvatars() }
     }
@@ -120,21 +179,25 @@ struct ExploreView: View {
     private func loadFeaturedAvatars() async {
         // If already loaded, there is no need to fetch again
         guard featuredAvatars.isEmpty else { return }
+        logManager.trackEvent(event: Event.loadFeaturedAvatarsStart)
 
         do {
             featuredAvatars = try await avatarManager.getFeaturedAvatars()
+            logManager.trackEvent(event: Event.loadFeaturedAvatarsSuccess(avatarCount: featuredAvatars.count))
         } catch {
-            print("Error loading featured avatars: \(error)")
+            logManager.trackEvent(event: Event.loadFeaturedAvatarsFail(error: error))
         }
     }
 
     private func loadPopularAvatars() async {
         guard popularAvatars.isEmpty else { return }
-
+        logManager.trackEvent(event: Event.loadPopularAvatarsStart)
+        
         do {
             popularAvatars = try await avatarManager.getPopularAvatars()
+            logManager.trackEvent(event: Event.loadPopularAvatarsSuccess(avatarCount: popularAvatars.count))
         } catch {
-            print("Error loading popular avatars: \(error)")
+            logManager.trackEvent(event: Event.loadPopularAvatarsFail(error: error))
         }
     }
 
@@ -208,10 +271,13 @@ struct ExploreView: View {
 
     private func onAvatarPressed(avatar: AvatarModel) {
         path.append(.chat(avatarId: avatar.avatarId, chat: nil))
+        logManager.trackEvent(event: Event.avatarPressed(avatar: avatar))
+
     }
 
     private func onCategoryPressed(category: CharacterOption, imageName: String) {
         path.append(.category(category: category, imageName: imageName))
+        logManager.trackEvent(event: Event.categoryPressed(category: category))
     }
 }
 

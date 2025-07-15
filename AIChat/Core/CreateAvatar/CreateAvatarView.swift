@@ -170,7 +170,7 @@ struct CreateAvatarView: View {
             switch self {
             case .saveAvatarFail(error: let error), .generateImageFail(error: let error):
                 return error.eventParameters
-            case .generateImageSuccess(prompt: let avatarDescriptionBuilder):
+            case .generateImageSuccess(avatarDescriptionBuilder: let avatarDescriptionBuilder):
                 return avatarDescriptionBuilder.eventParameters
             case .saveAvatarSuccess(avatar: let avatar):
                 return avatar.eventParameters

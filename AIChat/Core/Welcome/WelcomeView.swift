@@ -10,6 +10,7 @@ import SwiftUI
 struct WelcomeView: View {
 
     @Environment(AppState.self) private var root
+    @Environment(LogManager.self) private var logManager
 
     @State var imageName: String = Constants.randomImage
     @State private var showSignInView: Bool = false
@@ -30,6 +31,7 @@ struct WelcomeView: View {
                 policyLinks
             }
         }
+        .screenAppearAnalytics(name: "WelcomeView")
         .sheet(isPresented: $showSignInView) {
             CreateAccountView(
                 title: "Sign in",
@@ -76,7 +78,38 @@ struct WelcomeView: View {
         }
     }
 
+    enum Event: LoggableEvent {
+        case didSignIn(isNewUser: Bool)
+        case signInPressed
+        
+        var eventName: String {
+            switch self {
+            case .didSignIn:            return "WelcomeView_DidSignIn"
+            case .signInPressed:        return "WelcomeView_SignIn_Pressed"
+            }
+        }
+        var parameters: [String: Any]? {
+            switch self {
+            case .didSignIn(isNewUser: let isNewUser):
+                return [
+                    "isNewUser": isNewUser
+                ]
+            default:
+                return nil
+            }
+        }
+        
+        var type: LogType {
+            switch self {
+            default:
+                return .analytic
+            }
+        }
+    }
+    
     private func handleDidSignIn(isNewUser: Bool) {
+        logManager.trackEvent(event: Event.didSignIn(isNewUser: isNewUser))
+        
         if isNewUser {
             // Do nothing, user goes through onboarding
         } else {
@@ -84,9 +117,10 @@ struct WelcomeView: View {
             root.updateViewState(showTabBarView: true)
         }
     }
-
+    
     private func onSignInPressed() {
         showSignInView = true
+        logManager.trackEvent(event: Event.signInPressed)
     }
 
     private var policyLinks: some View {
