@@ -75,7 +75,7 @@ struct ExploreView: View {
             })
             .navigationDestinationForCoreModule(path: $path)
             .showModal(showModal: $showPushNotificationModal, content: {
-                
+                pushNotificationModal
             })
             .task {
                 await loadFeaturedAvatars()
@@ -87,12 +87,12 @@ struct ExploreView: View {
                 await handleShowPushNotificationButton()
             }
             .onFirstAppear {
-                schedulePushNotification()
+                schedulePushNotifications()
             }
         }
     }
     
-    private func schedulePushNotification() {
+    private func schedulePushNotifications() {
         pushManager.schedulePushNotificationsForTheNextWeek()
     }
     
@@ -139,9 +139,11 @@ struct ExploreView: View {
             primaryButtonAction: {
                 onEnablePushNotificationsPressed()
             },
-            secondaryButtonTitle: "Cancel") {
+            secondaryButtonTitle: "Cancel",
+            secondaryButtonAction: {
                 onCancelPushNotificationsPressed()
             }
+        )
     }
     
     private var devSettingsButton: some View {
