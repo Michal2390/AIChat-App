@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftfulUtilities
 
 struct SettingsView: View {
 
@@ -21,7 +22,8 @@ struct SettingsView: View {
     @State private var isAnonymousUser: Bool = false
     @State private var showCreateAccountView: Bool = false
     @State private var showAlert: AnyAppAlert?
-
+    @State private var showRatingsModal: Bool = false
+    
     var body: some View {
         NavigationStack {
             List {
@@ -41,7 +43,25 @@ struct SettingsView: View {
             }
             .showCustomAlert(alert: $showAlert)
             .screenAppearAnalytics(name: "SettingsView")
+            .showModal(showModal: $showRatingsModal) {
+                ratingsModal
+            }
         }
+    }
+    
+    private var ratingsModal: some View {
+        CustomModalView(
+            title: "Are you enjoying AIChat?",
+            subtitle: "We'd love to hear your feedback!",
+            primaryButtonTitle: "Yes",
+            primaryButtonAction: {
+                onEnjoyingAppYesPressed()
+            },
+            secondaryButtonTitle: "No",
+            secondaryButtonAction: {
+                onEnjoyingAppNoPressed()
+            }
+        )
     }
 
     private var accountSection: some View {
@@ -97,6 +117,14 @@ struct SettingsView: View {
 
     private var applicationSection: some View {
         Section {
+            Text("Rate us on the App Store!")
+                .foregroundStyle(.blue)
+                .rowFormatting()
+                .anyButton(.highlight, action: {
+                    onRatingsButtonPressed()
+                })
+                .removeListRowFormatting()
+            
             HStack(spacing: 8) {
                 Text("Version")
                 Spacer(minLength: 0)
@@ -119,7 +147,7 @@ struct SettingsView: View {
                 .foregroundStyle(.blue)
                 .rowFormatting()
                 .anyButton(.highlight, action: {
-
+                    onContactUsPressed()
                 })
                 .removeListRowFormatting()
         } header: {
@@ -143,6 +171,10 @@ struct SettingsView: View {
         case deleteAccountStart
         case deleteAccountSuccess
         case deleteAccountFail(error: Error)
+        case contactUsPressed
+        case ratingsPressed
+        case ratingsYesPressed
+        case ratingsNoPressed
         
         var eventName: String {
             switch self {
@@ -154,6 +186,10 @@ struct SettingsView: View {
             case .deleteAccountStart:       return "SettingsView_DeleteAccount_Start"
             case .deleteAccountSuccess:     return "SettingsView_DeleteAccount_Success"
             case .deleteAccountFail:        return "SettingsView_DeleteAccount_Fail"
+            case .contactUsPressed:         return "SettingsView_ContactUs_Pressed"
+            case .ratingsPressed:           return "SettingsView_Ratings_Pressed"
+            case .ratingsYesPressed:        return "SettingsView_RatingsYes_Pressed"
+            case .ratingsNoPressed:         return "SettingsView_RatingsNo_Pressed"
             }
         }
         
@@ -174,6 +210,31 @@ struct SettingsView: View {
                 return .analytic
             }
         }
+    }
+    private func onRatingsButtonPressed() {
+        logManager.trackEvent(event: Event.ratingsPressed)
+        showRatingsModal = true
+    }
+    
+    private func onEnjoyingAppYesPressed() {
+        logManager.trackEvent(event: Event.ratingsYesPressed)
+        showRatingsModal = false
+        AppStoreRatingsHelper.requestRatingsReview()
+    }
+    
+    private func onEnjoyingAppNoPressed() {
+        logManager.trackEvent(event: Event.ratingsNoPressed)
+        showRatingsModal = false
+    }
+    
+    private func onContactUsPressed() {
+        logManager.trackEvent(event: Event.contactUsPressed)
+        let email = "michal.fereniec0@gmail.com"
+        let emailString = "mailto:\(email)"
+        
+        guard let url = URL(string: emailString), UIApplication.shared.canOpenURL(url) else { return }
+        
+        UIApplication.shared.open(url)
     }
     
     func onSignOutPressed() {
