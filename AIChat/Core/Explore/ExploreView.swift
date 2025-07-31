@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ExploreView: View {
-
+    
     @Environment(AvatarManager.self) private var avatarManager
     @Environment(LogManager.self) private var logManager
     @Environment(PushManager.self) private var pushManager
@@ -24,7 +24,7 @@ struct ExploreView: View {
     @State private var showDevSettings: Bool = false
     @State private var showNotificationButton: Bool = false
     @State private var showPushNotificationModal: Bool = false
-    
+
     private var showDevSettingsButton: Bool {
         #if DEV || MOCK
         return true
@@ -46,11 +46,11 @@ struct ExploreView: View {
                     }
                     .removeListRowFormatting()
                 }
-
+                
                 if !featuredAvatars.isEmpty {
                     featuredSection
                 }
-
+                
                 if !popularAvatars.isEmpty {
                     categorySection
                     popularSection
@@ -80,7 +80,7 @@ struct ExploreView: View {
             .task {
                 await loadFeaturedAvatars()
             }
-            .task { // to put this into 2 seperate tasks is the simplest and best option in this case
+            .task {
                 await loadPopularAvatars()
             }
             .task {
@@ -89,7 +89,31 @@ struct ExploreView: View {
             .onFirstAppear {
                 schedulePushNotifications()
             }
+            .onOpenURL { url in
+                handleDeepLink(url: url)
+            }
         }
+    }
+    
+    private func handleDeepLink(url: URL) {
+        logManager.trackEvent(event: Event.deeplinkStart)
+        guard
+            let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+            let queryItems = components.queryItems else {
+            logManager.trackEvent(event: Event.deeplinkNoQueryItems)
+            return
+        }
+        
+        for queryItem in queryItems {
+            if queryItem.name == "category", let value = queryItem.value, let category = CharacterOption(rawValue: value) {
+                let imageName = popularAvatars.first(where: { $0.characterOption == category })?.profileImageName ?? Constants.randomImage
+                path.append(.category(category: category, imageName: imageName))
+                logManager.trackEvent(event: Event.deeplinkCategory(category: category))
+                return
+            }
+        }
+        
+        logManager.trackEvent(event: Event.deeplinkUnknown)
     }
     
     private func schedulePushNotifications() {
@@ -118,7 +142,7 @@ struct ExploreView: View {
     
     private func onEnablePushNotificationsPressed() {
         showPushNotificationModal = false
-        
+
         Task {
             let isAuthorized = try await pushManager.requestAuthorization()
             logManager.trackEvent(event: Event.pushNotifsEnable(isAuthorized: isAuthorized))
@@ -158,45 +182,54 @@ struct ExploreView: View {
         case devSettingsPressed
         case tryAgainPressed
         case loadFeaturedAvatarsStart
-        case loadFeaturedAvatarsSuccess(avatarCount: Int)
+        case loadFeaturedAvatarsSuccess(count: Int)
         case loadFeaturedAvatarsFail(error: Error)
         case loadPopularAvatarsStart
-        case loadPopularAvatarsSuccess(avatarCount: Int)
+        case loadPopularAvatarsSuccess(count: Int)
         case loadPopularAvatarsFail(error: Error)
         case avatarPressed(avatar: AvatarModel)
         case categoryPressed(category: CharacterOption)
         case pushNotifsStart
         case pushNotifsEnable(isAuthorized: Bool)
         case pushNotifsCancel
-        
+        case deeplinkStart
+        case deeplinkNoQueryItems
+        case deeplinkCategory(category: CharacterOption)
+        case deeplinkUnknown
+
         var eventName: String {
             switch self {
-            case .devSettingsPressed:              return "ExploreView_DevSettings_Pressed"
-            case .tryAgainPressed:                 return "ExploreView_TryAgain_Pressed"
-            case .loadFeaturedAvatarsStart:        return "ExploreView_LoadAvatars_Start"
-            case .loadFeaturedAvatarsSuccess:      return "ExploreView_LoadAvatars_Success"
-            case .loadFeaturedAvatarsFail:         return "ExploreView_LoadAvatars_Fail"
-            case .loadPopularAvatarsStart:         return "ExploreView_PopularAvatars_Start"
-            case .loadPopularAvatarsSuccess:       return "ExploreView_PopularAvatars_Success"
-            case .loadPopularAvatarsFail:          return "ExploreView_PopularAvatars_Fail"
-            case .avatarPressed:                   return "ExploreView_Avatar_Pressed"
-            case .categoryPressed:                 return "ExploreView_Category_Pressed"
-            case .pushNotifsStart:                 return "ExploreView_PushNotifs_Start"
-            case .pushNotifsEnable:                return "ExploreView_PushNotifs_Enable"
-            case .pushNotifsCancel:                return "ExploreView_PushNotifs_Cancel"
+            case .devSettingsPressed:           return "ExploreView_DevSettings_Pressed"
+            case .tryAgainPressed:              return "ExploreView_TryAgain_Pressed"
+            case .loadFeaturedAvatarsStart:     return "ExploreView_LoadFeaturedAvatars_Start"
+            case .loadFeaturedAvatarsSuccess:   return "ExploreView_LoadFeaturedAvatars_Success"
+            case .loadFeaturedAvatarsFail:      return "ExploreView_LoadFeaturedAvatars_Fail"
+            case .loadPopularAvatarsStart:      return "ExploreView_LoadPopularAvatars_Start"
+            case .loadPopularAvatarsSuccess:    return "ExploreView_LoadPopularAvatars_Success"
+            case .loadPopularAvatarsFail:       return "ExploreView_LoadPopularAvatars_Fail"
+            case .avatarPressed:                return "ExploreView_Avatar_Pressed"
+            case .categoryPressed:              return "ExploreView_Category_Pressed"
+            case .pushNotifsStart:              return "ExploreView_PushNotifs_Start"
+            case .pushNotifsEnable:             return "ExploreView_PushNotifs_Enable"
+            case .pushNotifsCancel:             return "ExploreView_PushNotifs_Cancel"
+            case .deeplinkStart:                return "ExploreView_DeepLink_Start"
+            case .deeplinkNoQueryItems:         return "ExploreView_DeepLink_NoItems"
+            case .deeplinkCategory:             return "ExploreView_DeepLink_Category"
+            case .deeplinkUnknown:              return "ExploreView_DeepLink_Unknown"
             }
         }
+        
         var parameters: [String: Any]? {
             switch self {
-            case .loadFeaturedAvatarsFail(error: let error):
-                return error.eventParameters
-            case .loadFeaturedAvatarsSuccess(avatarCount: let avatarCount), .loadPopularAvatarsSuccess(avatarCount: let avatarCount):
+            case .loadPopularAvatarsSuccess(count: let count), .loadFeaturedAvatarsSuccess(count: let count):
                 return [
-                    "avatars_count": avatarCount
+                    "avatars_count": count
                 ]
+            case .loadPopularAvatarsFail(error: let error), .loadFeaturedAvatarsFail(error: let error):
+                return error.eventParameters
             case .avatarPressed(avatar: let avatar):
                 return avatar.eventParameters
-            case .categoryPressed(category: let category):
+            case .categoryPressed(category: let category), .deeplinkCategory(category: let category):
                 return [
                     "category": category.rawValue
                 ]
@@ -211,7 +244,7 @@ struct ExploreView: View {
         
         var type: LogType {
             switch self {
-            case .loadFeaturedAvatarsFail, .loadPopularAvatarsFail:
+            case .loadPopularAvatarsFail, .loadFeaturedAvatarsFail, .deeplinkUnknown:
                 return .severe
             default:
                 return .analytic
@@ -223,22 +256,21 @@ struct ExploreView: View {
         showDevSettings = true
         logManager.trackEvent(event: Event.devSettingsPressed)
     }
-
+    
     private var loadingIndicator: some View {
         ProgressView()
             .tint(.accent)
             .padding(40)
             .frame(maxWidth: .infinity)
     }
-
+    
     private var errorMessageView: some View {
         VStack(alignment: .center, spacing: 8) {
             Text("Error")
                 .font(.headline)
-            Text("Please check your internet connection and try again")
+            Text("Please check your internet connection and try again.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-
             Button("Try again") {
                 onTryAgainPressed()
             }
@@ -248,40 +280,49 @@ struct ExploreView: View {
         .multilineTextAlignment(.center)
         .padding(40)
     }
-
+    
     private func onTryAgainPressed() {
-        isLoadingPopular = true
         isLoadingFeatured = true
+        isLoadingPopular = true
         logManager.trackEvent(event: Event.tryAgainPressed)
-        Task { await loadFeaturedAvatars() }
-        Task { await loadPopularAvatars() }
-    }
 
+        Task {
+            await loadFeaturedAvatars()
+        }
+        Task {
+            await loadPopularAvatars()
+        }
+    }
+    
     private func loadFeaturedAvatars() async {
-        // If already loaded, there is no need to fetch again
+        // If already loaded, no need to fetch again
         guard featuredAvatars.isEmpty else { return }
         logManager.trackEvent(event: Event.loadFeaturedAvatarsStart)
 
         do {
             featuredAvatars = try await avatarManager.getFeaturedAvatars()
-            logManager.trackEvent(event: Event.loadFeaturedAvatarsSuccess(avatarCount: featuredAvatars.count))
+            logManager.trackEvent(event: Event.loadFeaturedAvatarsSuccess(count: featuredAvatars.count))
         } catch {
             logManager.trackEvent(event: Event.loadFeaturedAvatarsFail(error: error))
         }
+        
+        isLoadingFeatured = false
     }
-
+    
     private func loadPopularAvatars() async {
         guard popularAvatars.isEmpty else { return }
         logManager.trackEvent(event: Event.loadPopularAvatarsStart)
-        
+
         do {
             popularAvatars = try await avatarManager.getPopularAvatars()
-            logManager.trackEvent(event: Event.loadPopularAvatarsSuccess(avatarCount: popularAvatars.count))
+            logManager.trackEvent(event: Event.loadPopularAvatarsSuccess(count: popularAvatars.count))
         } catch {
             logManager.trackEvent(event: Event.loadPopularAvatarsFail(error: error))
         }
+        
+        isLoadingPopular = false
     }
-
+    
     private var featuredSection: some View {
         Section {
             ZStack {
@@ -301,7 +342,7 @@ struct ExploreView: View {
             Text("Featured")
         }
     }
-
+        
     private var categorySection: some View {
         Section {
             ZStack {
@@ -331,7 +372,7 @@ struct ExploreView: View {
             Text("Categories")
         }
     }
-
+    
     private var popularSection: some View {
         Section {
             ForEach(popularAvatars, id: \.self) { avatar in
@@ -349,11 +390,10 @@ struct ExploreView: View {
             Text("Popular")
         }
     }
-
+    
     private func onAvatarPressed(avatar: AvatarModel) {
         path.append(.chat(avatarId: avatar.avatarId, chat: nil))
         logManager.trackEvent(event: Event.avatarPressed(avatar: avatar))
-
     }
 
     private func onCategoryPressed(category: CharacterOption, imageName: String) {
@@ -367,13 +407,11 @@ struct ExploreView: View {
         .environment(AvatarManager(remote: MockAvatarService()))
         .previewEnvironment()
 }
-
 #Preview("No data") {
     ExploreView()
-        .environment(AvatarManager(remote: MockAvatarService(avatars: [])))
+        .environment(AvatarManager(remote: MockAvatarService(avatars: [], delay: 2.0)))
         .previewEnvironment()
 }
-
 #Preview("Slow loading") {
     ExploreView()
         .environment(AvatarManager(remote: MockAvatarService(delay: 10)))
