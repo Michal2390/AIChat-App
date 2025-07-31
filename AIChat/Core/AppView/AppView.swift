@@ -16,30 +16,49 @@ struct AppView: View {
     @State var appState: AppState = AppState()
 
     var body: some View {
-        AppViewBuilder(
-            showTabBar: appState.showTabbar,
-            tabbarView: {
-                TabBarView()
-            },
-            onboardingView: {
-                WelcomeView()
-            }
-        )
-        .environment(appState)
-        .task {
-            await checkUserStatus()
-        }
-        .task {
-            try? await Task.sleep(for: .seconds(2))
-            await showATTPromptIfNeeded()
-        }
-        .onChange(of: appState.showTabbar) { _, showTabBar in
-            if !showTabBar {
-                Task {
+        RootView(
+            delegate: RootDelegate(
+                onApplicationDidAppear: nil,
+                onApplicationWillEnterForeground: { _ in
+                    Task {
+                        await checkUserStatus()
+                    }
+                },
+                onApplicationDidBecomeActive: nil,
+                onApplicationWillResignActive: nil,
+                onApplicationDidEnterBackground: nil,
+                onApplicationWillTerminate: nil
+            )) {
+                AppViewBuilder(
+                    showTabBar: appState.showTabbar,
+                    tabbarView: {
+                        TabBarView()
+                    },
+                    onboardingView: {
+                        WelcomeView()
+                    }
+                )
+                .environment(appState)
+                .task {
                     await checkUserStatus()
                 }
+                .onNotificationReceived(name: UIApplication.willEnterForegroundNotification, action: { _ in
+                    Task {
+                        await checkUserStatus()
+                    }
+                })
+                .task {
+                    try? await Task.sleep(for: .seconds(2))
+                    await showATTPromptIfNeeded()
+                }
+                .onChange(of: appState.showTabbar) { _, showTabBar in
+                    if !showTabBar {
+                        Task {
+                            await checkUserStatus()
+                        }
+                    }
+                }
             }
-        }
     }
     
     enum Event: LoggableEvent {

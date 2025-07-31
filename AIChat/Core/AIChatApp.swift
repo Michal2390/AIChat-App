@@ -45,7 +45,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         config.configure()
         dependencies = Dependencies(config: config)
         return true
-  }
+   }
 }
 
 enum BuildConfiguration {
