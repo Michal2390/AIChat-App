@@ -6,6 +6,7 @@
 //
 import OpenAI
 import SwiftUI
+import FirebaseFunctions
 
 private typealias ChatCompletion = ChatQuery.ChatCompletionMessageParam
 private typealias SystemMessage = ChatQuery.ChatCompletionMessageParam.ChatCompletionSystemMessageParam
@@ -22,7 +23,7 @@ struct OpenAIService: AIService {
     func generateImage(input: String) async throws -> UIImage {
         let query = ImagesQuery(
             prompt: input,
-            model: .dall_e_2,
+            model: .gpt3_5Turbo,
             n: 1,
             // quality: .hd,
             responseFormat: .b64_json,
@@ -43,18 +44,30 @@ struct OpenAIService: AIService {
     }
 
     func generateText(chats: [AIChatModel]) async throws -> AIChatModel {
-        let messages = chats.compactMap({ $0.toOpenAIModel() })        
-        let query = ChatQuery(messages: messages, model: .gpt3_5Turbo)
-        let result = try await openAI.chats(query: query)
-
+        let messages = chats.compactMap { chat in
+            let role = chat.role.rawValue
+            let content = chat.message
+            return [
+                "role": role,
+                "content": content
+            ]
+        }
+        
+        let response = try await Functions.functions().httpsCallable("generateOpenAIText").call([
+            "messages": messages
+        ])
+        
         guard
-            let chat = result.choices.first?.message,
-            let model = AIChatModel(chat: chat)
-        else { throw OpenAIError.invalidResponse }
-
-        return model
+            let dict = response.data as? [String: Any],
+            let roleString = dict["role"] as? String,
+            let role = AIChatRole(rawValue: roleString),
+            let content = dict["content"] as? String else {
+            throw OpenAIError.invalidResponse
+        }
+        
+        return AIChatModel(role: role, content: content)
     }
-
+    
     enum OpenAIError: LocalizedError {
         case invalidResponse
     }
