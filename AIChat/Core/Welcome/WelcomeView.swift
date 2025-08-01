@@ -47,13 +47,16 @@ struct WelcomeView: View {
     private var titleSection: some View {
         VStack {
             Text(Constants.welcomeText)
-                .frame(maxHeight: .infinity)
                 .font(.largeTitle)
                 .fontWeight(.semibold)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
             Text(Constants.welcomeName)
                 .opacity(0.7)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
         }
     }
 
@@ -64,7 +67,10 @@ struct WelcomeView: View {
             } label: {
                 Text("Get Started my G!")
                     .callToActionButton()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
             }
+            .frame(maxWidth: 500)
 
             Text("Already have an account? Sign in.")
                 .foregroundStyle(.black)
@@ -75,6 +81,8 @@ struct WelcomeView: View {
                 .onTapGesture {
                     onSignInPressed()
                 }
+                .lineLimit(1)
+                .minimumScaleFactor(0.3)
         }
     }
 
@@ -127,12 +135,16 @@ struct WelcomeView: View {
         HStack(spacing: 8) {
             Link(destination: URL(string: Constants.termsOfServiceURL)!) {
                 Text("Terms of Service")
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
             }
             Circle()
                 .fill(.accent)
                 .frame(width: 4, height: 4)
             Link(destination: URL(string: Constants.privacyPolicyURL)!) {
                 Text("Privacy Policy")
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
             }
         }
     }
@@ -140,4 +152,5 @@ struct WelcomeView: View {
 
 #Preview {
     WelcomeView()
+        .previewEnvironment()
 }
