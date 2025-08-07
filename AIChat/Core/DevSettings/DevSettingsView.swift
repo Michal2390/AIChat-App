@@ -11,12 +11,16 @@ struct DevSettingsView: View {
     
     @Environment(AuthManager.self) private var authManager
     @Environment(UserManager.self) private var userManager
+    @Environment(ABTestManager.self) private var abTestManager
 
     @Environment(\.dismiss) private var dismiss
+    
+    @State private var createAccountTest: Bool = false
     
     var body: some View {
         NavigationStack {
             List {
+                abTestSection
                 authSection
                 userSection
                 deviceSection
@@ -28,7 +32,14 @@ struct DevSettingsView: View {
                 }
             }
             .screenAppearAnalytics(name: "DevSettings")
+            .onFirstAppear {
+                loadABTests()
+            }
         }
+    }
+    
+    private func loadABTests() {
+        createAccountTest = abTestManager.activeTests.createAccountTest
     }
     
     private var backButtonView: some View {
@@ -42,6 +53,28 @@ struct DevSettingsView: View {
     
     private func onBackButtonPressed() {
         dismiss()
+    }
+    
+    private func handleCreateAccountChange(oldValue: Bool, newValue: Bool) {
+        if newValue != abTestManager.activeTests.createAccountTest {
+            do {
+                var tests = abTestManager.activeTests
+                tests.update(createAccountTest: newValue)
+                try abTestManager.override(updatedTests: tests)
+            } catch {
+                createAccountTest = abTestManager.activeTests.createAccountTest
+            }
+        }
+    }
+    
+    private var abTestSection: some View {
+        Section {
+            Toggle("Create Acc Test", isOn: $createAccountTest)
+                .onChange(of: createAccountTest, handleCreateAccountChange)
+        } header: {
+            Text("AB Tests")
+        }
+        .font(.caption)
     }
     
     private var authSection: some View {
