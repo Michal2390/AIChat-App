@@ -50,12 +50,20 @@ struct ExploreView: View {
                     .removeListRowFormatting()
                 }
                 
+                if !popularAvatars.isEmpty {
+                    if abTestManager.activeTests.categoryRowTest == .top {
+                        categorySection
+                    }
+                }
+                
                 if !featuredAvatars.isEmpty {
                     featuredSection
                 }
                 
                 if !popularAvatars.isEmpty {
-                    categorySection
+                    if abTestManager.activeTests.categoryRowTest == .original {
+                        categorySection
+                    }
                     popularSection
                 }
             }
@@ -437,6 +445,21 @@ struct ExploreView: View {
         .environment(AvatarManager(remote: MockAvatarService()))
         .environment(AuthManager(service: MockAuthService(user: .mock(isAnonymous: true))))
         .environment(ABTestManager(service: MockABTestService(createAccountTest: true)))
+        .previewEnvironment()
+}
+#Preview("CategoryRowTest: original") {
+    ExploreView()
+        .environment(ABTestManager(service: MockABTestService(categoryRowTest: .original)))
+        .previewEnvironment()
+}
+#Preview("CategoryRowTest: top") {
+    ExploreView()
+        .environment(ABTestManager(service: MockABTestService(categoryRowTest: .top)))
+        .previewEnvironment()
+}
+#Preview("CategoryRowTest: hidden") {
+    ExploreView()
+        .environment(ABTestManager(service: MockABTestService(categoryRowTest: .hidden)))
         .previewEnvironment()
 }
 #Preview("No data") {

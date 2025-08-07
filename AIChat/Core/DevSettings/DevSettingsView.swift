@@ -17,6 +17,7 @@ struct DevSettingsView: View {
     
     @State private var createAccountTest: Bool = false
     @State private var onboardingCommunityTest: Bool = false
+    @State private var categoryRowTest: CategoryRowTestOption = .default
     
     var body: some View {
         NavigationStack {
@@ -42,6 +43,7 @@ struct DevSettingsView: View {
     private func loadABTests() {
         createAccountTest = abTestManager.activeTests.createAccountTest
         onboardingCommunityTest = abTestManager.activeTests.onboardingCommunityTest
+        categoryRowTest = abTestManager.activeTests.categoryRowTest
     }
     
     private var backButtonView: some View {
@@ -79,10 +81,21 @@ struct DevSettingsView: View {
         )
     }
     
-    private func updateTest(
-        property: inout Bool, // I need to update a Boolean that is mutable
-        newValue: Bool,
-        savedValue: Bool,
+    private func handleCategoryRowTestChange(oldValue: CategoryRowTestOption, newValue: CategoryRowTestOption) {
+        updateTest(
+            property: &categoryRowTest,
+            newValue: newValue,
+            savedValue: abTestManager.activeTests.categoryRowTest,
+            updateAction: { tests in
+                tests.update(categoryRowTest: newValue)
+            }
+        )
+    }
+    
+    private func updateTest<T: Equatable>(
+        property: inout T, // I need to update a Type(Boolean) that is mutable
+        newValue: T,
+        savedValue: T,
         updateAction: (inout ActiveABTests) -> Void
     ) {
         if newValue != savedValue {
@@ -100,8 +113,17 @@ struct DevSettingsView: View {
         Section {
             Toggle("Create Acc Test", isOn: $createAccountTest)
                 .onChange(of: createAccountTest, handleCreateAccountChange)
+            
             Toggle("Onb Community Test", isOn: $onboardingCommunityTest)
                 .onChange(of: onboardingCommunityTest, handleOnboardingCommunityTestChange)
+            
+            Picker("Category Row Test", selection: $categoryRowTest) {
+                ForEach(CategoryRowTestOption.allCases, id: \.self) { option in
+                    Text(option.rawValue)
+                }
+            }
+            .onChange(of: categoryRowTest, handleCategoryRowTestChange)
+            
         } header: {
             Text("AB Tests")
         }
