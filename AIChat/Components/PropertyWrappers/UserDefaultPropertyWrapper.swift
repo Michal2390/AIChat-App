@@ -13,7 +13,6 @@ extension Float: UserDefaultsCompatible { }
 extension Double: UserDefaultsCompatible { }
 extension String: UserDefaultsCompatible { }
 extension URL: UserDefaultsCompatible { }
-extension CategoryRowTestOption: UserDefaultsCompatible { }
 
 @propertyWrapper
 struct UserDefault<T: UserDefaultsCompatible> {
