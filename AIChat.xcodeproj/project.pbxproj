@@ -12,6 +12,7 @@
 		8641180D2E09811B00EDB5D5 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 8641180C2E09811B00EDB5D5 /* FirebaseCrashlytics */; };
 		8662DF8B2D64446000CADAE8 /* SwiftfulUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = 8662DF8A2D64446000CADAE8 /* SwiftfulUtilities */; };
 		8699F6302D95BA1500E36E51 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 8699F62F2D95BA1500E36E51 /* FirebaseStorage */; };
+		86A1E4F62E457631002D25FF /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = 86A1E4F52E457631002D25FF /* FirebaseRemoteConfig */; };
 		86A943592D3C28FD00BECA0D /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 86A943582D3C28FD00BECA0D /* SDWebImageSwiftUI */; };
 		86B038C92D93782C00AD8651 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 86B038C82D93782C00AD8651 /* FirebaseFirestore */; };
 		86B528CB2E097BF800C4A1E4 /* Mixpanel in Frameworks */ = {isa = PBXBuildFile; productRef = 86B528CA2E097BF800C4A1E4 /* Mixpanel */; };
@@ -97,6 +98,7 @@
 				8631025A2D920C870066A80C /* SignInAppleAsync in Frameworks */,
 				86A943592D3C28FD00BECA0D /* SDWebImageSwiftUI in Frameworks */,
 				86CC520D2E3D04CF003B89A7 /* FirebaseFunctions in Frameworks */,
+				86A1E4F62E457631002D25FF /* FirebaseRemoteConfig in Frameworks */,
 				86121C282D93864F00FC58A5 /* SwiftfulFirestore in Frameworks */,
 				86BC66F92D91E79300F8960A /* FirebaseAuth in Frameworks */,
 				8641180D2E09811B00EDB5D5 /* FirebaseCrashlytics in Frameworks */,
@@ -189,6 +191,7 @@
 				86B528CA2E097BF800C4A1E4 /* Mixpanel */,
 				8641180C2E09811B00EDB5D5 /* FirebaseCrashlytics */,
 				86CC520C2E3D04CF003B89A7 /* FirebaseFunctions */,
+				86A1E4F52E457631002D25FF /* FirebaseRemoteConfig */,
 			);
 			productName = AIChat;
 			productReference = 86A637742D2F9B530087E26B /* AIChat.app */;
@@ -936,6 +939,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 86BC66F72D91E79300F8960A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		86A1E4F52E457631002D25FF /* FirebaseRemoteConfig */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 86BC66F72D91E79300F8960A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseRemoteConfig;
 		};
 		86A943582D3C28FD00BECA0D /* SDWebImageSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;
