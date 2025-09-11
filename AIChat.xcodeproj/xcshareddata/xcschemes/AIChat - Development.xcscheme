@@ -56,6 +56,9 @@
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
+      <StoreKitConfigurationFileReference
+         identifier = "../../AIChat/Services/Purchases/AIChatPurchaseConfiguration.storekit">
+      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Debug"
