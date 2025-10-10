@@ -152,7 +152,7 @@ struct ChatView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(8)
-            .rotationEffect(.degrees(180)) // a trick
+            .rotationEffect(.degrees(180)) // a trick // use .defaultScrollAnchor pls!!!!!!!!
         }
         .rotationEffect(.degrees(180)) // to make scrollview start at the bottom
         .scrollPosition(id: $scrollPosition, anchor: .center)
