@@ -54,16 +54,6 @@
 			);
 			target = 86A637732D2F9B530087E26B /* AIChat */;
 		};
-		86B71A822E99561F002110F1 /* Exceptions for "PDFs" folder in "AIChat" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Makroekonomia-podstawy 2.pdf",
-				"Makroekonomia-podstawy.pdf",
-				"Mikroekonomia-Podstawy-WEB 2.pdf",
-				"Mikroekonomia-Podstawy-WEB.pdf",
-			);
-			target = 86A637732D2F9B530087E26B /* AIChat */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -98,14 +88,6 @@
 		86A637912D2F9B560087E26B /* AIChatUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AIChatUITests;
-			sourceTree = "<group>";
-		};
-		86B71A7D2E995609002110F1 /* PDFs */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				86B71A822E99561F002110F1 /* Exceptions for "PDFs" folder in "AIChat" target */,
-			);
-			path = PDFs;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -151,7 +133,6 @@
 		86A6376B2D2F9B530087E26B = {
 			isa = PBXGroup;
 			children = (
-				86B71A7D2E995609002110F1 /* PDFs */,
 				86A637762D2F9B530087E26B /* AIChat */,
 				86A637872D2F9B550087E26B /* AIChatTests */,
 				86A637912D2F9B560087E26B /* AIChatUITests */,
