@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import StoreKit
 
 enum EntitlementOption: Codable, CaseIterable {
     case yearly
@@ -24,15 +25,84 @@ enum EntitlementOption: Codable, CaseIterable {
 
 struct PaywallView: View {
     
+    @Environment(PurchaseManager.self) private var purchaseManager
     @Environment(LogManager.self) private var logManager
     @Environment(\.dismiss) private var dismiss
-    
+
+    @State private var products: [AnyProduct] = []
+    @State private var productIds: [String] = EntitlementOption.allProductsIds
+    @State private var showAlert: AnyAppAlert?
+
     var body: some View {
-        StoreKitPaywallView(
-            onInAppPurchaseStart: onPurchaseStart,
-            onInAppPurchaseCompletion: onPurchaseComplete
-        )
+        ZStack {
+            if products.isEmpty {
+                ProgressView()
+            } else {
+                CustomPaywallView(
+                    products: products,
+                    onBackButtonPressed: onBackButtonPressed,
+                    onRestorePurchasePressed: onRestorePurchasePressed,
+                    onPurchaseProductPressed: onPurchaseProductPressed
+                )
+            }
+        }
+            //        StoreKitPaywallView(
+            //            productIds: productIds,
+            //            onInAppPurchaseStart: onPurchaseStart,
+            //            onInAppPurchaseCompletion: onPurchaseComplete
+            //        )
             .screenAppearAnalytics(name: "Paywall")
+            .showCustomAlert(alert: $showAlert)
+            .task {
+                await onLoadProducts()
+            }
+    }
+    
+    private func onLoadProducts() async {
+        do {
+            products = try await purchaseManager.getProducts(productIds: productIds)
+        } catch {
+            showAlert = AnyAppAlert(error: error)
+        }
+    }
+    
+    private func onBackButtonPressed() {
+        logManager.trackEvent(event: Event.backButtonPressed)
+        dismiss()
+    }
+    
+    private func onRestorePurchasePressed() {
+        logManager.trackEvent(event: Event.restorePurchaseStart)
+        
+        Task {
+            do {
+                let entitlements = try await purchaseManager.restorePurchase()
+                
+                if entitlements.hasActiveEntitlement {
+                    dismiss()
+                }
+            } catch {
+                showAlert = AnyAppAlert(error: error)
+            }
+        }
+    }
+    
+    private func onPurchaseProductPressed(product: AnyProduct) {
+        logManager.trackEvent(event: Event.purchaseStart(product: product))
+        
+        Task {
+            do {
+                let entitlements = try await purchaseManager.purchaseProduct(productId: product.id)
+                logManager.trackEvent(event: Event.purchaseSuccess(product: product))
+                
+                if entitlements.hasActiveEntitlement {
+                    dismiss()
+                }
+            } catch {
+                logManager.trackEvent(event: Event.purchaseFail(error: error))
+                showAlert = AnyAppAlert(error: error)
+            }
+        }
     }
     
     private func onPurchaseStart(product: StoreKit.Product) {
@@ -68,6 +138,9 @@ struct PaywallView: View {
         case purchaseCancelled(product: AnyProduct)
         case purchaseUnknown(product: AnyProduct)
         case purchaseFail(error: Error)
+        case loadProductsStart
+        case restorePurchaseStart
+        case backButtonPressed
         
         var eventName: String {
             switch self {
@@ -77,6 +150,9 @@ struct PaywallView: View {
             case .purchaseCancelled:                   return "PaywallView_Purchase_Cancelled"
             case .purchaseUnknown:                     return "PaywallView_Purchase_Unknown"
             case .purchaseFail:                        return "PaywallView_Purchase_Fail"
+            case .loadProductsStart:                   return "PaywallView_Load_Start"
+            case .restorePurchaseStart:                return "PaywallView_Restore_Start"
+            case .backButtonPressed:                   return "PaywallView_BackButton_Pressed"
             }
         }
         
@@ -86,8 +162,8 @@ struct PaywallView: View {
                 return product.eventParameters
             case .purchaseFail(error: let error):
                 return error.eventParameters
-//            default:
-//                return nil
+            default:
+                return nil
             }
         }
         
@@ -101,33 +177,6 @@ struct PaywallView: View {
         }
     }
     
-}
-
-import StoreKit
-struct StoreKitPaywallView: View {
-    
-    var onInAppPurchaseStart: ((Product) async -> Void)?
-    var onInAppPurchaseCompletion: ((Product, Result<Product.PurchaseResult, any Error>) async -> Void)?
-    
-    var body: some View {
-        SubscriptionStoreView(productIDs: EntitlementOption.allProductsIds) {
-            VStack(spacing: 8) {
-                Text("AI Chat 😎")
-                    .font(.largeTitle)
-                    .fontWeight(.semibold)
-                
-                Text("Get premium access to unlock all features.")
-                    .font(.subheadline)
-            }
-            .foregroundStyle(.white)
-            .multilineTextAlignment(.center)
-            .containerBackground(Color.accent.gradient, for: .subscriptionStore)
-        }
-        .storeButton(.visible, for: .restorePurchases)
-        .subscriptionStoreControlStyle(.prominentPicker)
-        .onInAppPurchaseStart(perform: onInAppPurchaseStart)
-        .onInAppPurchaseCompletion(perform: onInAppPurchaseCompletion)
-    }
 }
 
 #Preview {
