@@ -9,7 +9,7 @@ import SwiftUI
 
 protocol PurchaseService: Sendable {
     func listenForTransactions(onTransactionUpdated: @Sendable ([PurchasedEntitlement]) async -> Void) async
-    func getUserEntitlements() async -> [PurchasedEntitlement]
+    func getUserEntitlements() async throws -> [PurchasedEntitlement]
     func getProducts(productIds: [String]) async throws -> [AnyProduct]
     func restorePurchase() async throws -> [PurchasedEntitlement]
     func purchaseProduct(productId: String) async throws -> [PurchasedEntitlement]
@@ -54,13 +54,14 @@ struct StoreKitPurchaseService: PurchaseService {
             if let transaction = try? update.payloadValue {
                 await transaction.finish()
                 
-                let entitlements = await getUserEntitlements()
-                await onTransactionUpdated(entitlements)
+                if let entitlements = try? await getUserEntitlements() {
+                    await onTransactionUpdated(entitlements)
+                }
             }
         }
     }
     
-    func getUserEntitlements() async -> [PurchasedEntitlement] {
+    func getUserEntitlements() async throws -> [PurchasedEntitlement] {
         var activeTransactions: [PurchasedEntitlement] = []
         
         for await verificationResult in StoreKit.Transaction.currentEntitlements {
@@ -102,14 +103,14 @@ struct StoreKitPurchaseService: PurchaseService {
     
     func restorePurchase() async throws -> [PurchasedEntitlement] {
         try await AppStore.sync()
-        return await getUserEntitlements()
+        return try await getUserEntitlements()
     }
     
     func purchaseProduct(productId: String) async throws -> [PurchasedEntitlement] {
         let products = try await Product.products(for: [productId])
         
         guard let product = products.first else {
-            throw Error.productNotFound
+            throw PurchaseError.productNotFound
         }
         
         let result = try await product.purchase()
@@ -119,17 +120,66 @@ struct StoreKitPurchaseService: PurchaseService {
             let transaction = try verificationResult.payloadValue
             await transaction.finish()
             
-            return await getUserEntitlements()
+            return try await getUserEntitlements()
         case .userCancelled:
-            throw Error.userCancelledPurchase
+            throw PurchaseError.userCancelledPurchase
         default:
-            throw Error.failedToPurchase
+            throw PurchaseError.failedToPurchase
+        }
+    }
+}
+
+enum PurchaseError: LocalizedError {
+    case productNotFound, userCancelledPurchase, failedToPurchase
+}
+
+import RevenueCat
+
+struct RevenueCatPurchaseService: PurchaseService {
+    
+    init(apiKey: String, logLevel: LogLevel = .warn) {
+        Purchases.configure(withAPIKey: apiKey)
+        Purchases.logLevel = logLevel
+        Purchases.shared.attribution.collectDeviceIdentifiers()
+    }
+    
+    func listenForTransactions(onTransactionUpdated: @Sendable ([PurchasedEntitlement]) async -> Void) async {
+        for await customerInfo in Purchases.shared.customerInfoStream {
+            let entitlements = customerInfo.entitlements.all.asPurchasedEntitlements()
+            await onTransactionUpdated(entitlements)
         }
     }
     
-    enum Error: LocalizedError {
-        case productNotFound, userCancelledPurchase, failedToPurchase
+    func getUserEntitlements() async throws -> [PurchasedEntitlement] {
+        let customerInfo = try await Purchases.shared.customerInfo()
+        let entitlements = customerInfo.entitlements.all.asPurchasedEntitlements()
+        return entitlements
     }
+    
+    func getProducts(productIds: [String]) async throws -> [AnyProduct] {
+        let products = await Purchases.shared.products(productIds)
+        return products.map( { AnyProduct(revenueCatProduct: $0) })
+    }
+    
+    func restorePurchase() async throws -> [PurchasedEntitlement] {
+        let customerInfo = try await Purchases.shared.restorePurchases()
+        let entitlements = customerInfo.entitlements.all.asPurchasedEntitlements()
+        return entitlements
+    }
+    
+    func purchaseProduct(productId: String) async throws -> [PurchasedEntitlement] {
+        let products = await Purchases.shared.products([productId])
+        
+        guard let product = products.first else {
+            throw PurchaseError.productNotFound
+        }
+        
+        let result = try await Purchases.shared.purchase(product: product)
+        let customerInfo = result.customerInfo
+        let entitlements = customerInfo.entitlements.all.asPurchasedEntitlements()
+        return entitlements
+    }
+    
 }
 
 @MainActor
@@ -150,7 +200,9 @@ class PurchaseManager {
     
     private func configure() {
         Task {
-            entitlements = await service.getUserEntitlements()
+            if let entitlements = try? await service.getUserEntitlements() {
+                updateActiveEntitlements(entitlements: entitlements)
+            }
         }
         
         Task {

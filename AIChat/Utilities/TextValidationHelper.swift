@@ -15,7 +15,7 @@ struct TextValidationHelper {
         }
 
         let badWords: [String] = [
-            "shit", "bitch", "ass"
+            "shit", "bitch", "ass", "nigga"
         ]
 
         if badWords.contains(text.lowercased()) {

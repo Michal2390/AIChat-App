@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		86121C282D93864F00FC58A5 /* SwiftfulFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 86121C272D93864F00FC58A5 /* SwiftfulFirestore */; };
+		862A00F82EF0F34F00E3F31F /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 862A00F72EF0F34F00E3F31F /* RevenueCat */; };
+		862A00FA2EF0F35000E3F31F /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 862A00F92EF0F34F00E3F31F /* RevenueCatUI */; };
 		8631025A2D920C870066A80C /* SignInAppleAsync in Frameworks */ = {isa = PBXBuildFile; productRef = 863102592D920C870066A80C /* SignInAppleAsync */; };
 		8641180D2E09811B00EDB5D5 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 8641180C2E09811B00EDB5D5 /* FirebaseCrashlytics */; };
 		8662DF8B2D64446000CADAE8 /* SwiftfulUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = 8662DF8A2D64446000CADAE8 /* SwiftfulUtilities */; };
@@ -99,11 +101,13 @@
 			files = (
 				8631025A2D920C870066A80C /* SignInAppleAsync in Frameworks */,
 				86A943592D3C28FD00BECA0D /* SDWebImageSwiftUI in Frameworks */,
+				862A00F82EF0F34F00E3F31F /* RevenueCat in Frameworks */,
 				86CC520D2E3D04CF003B89A7 /* FirebaseFunctions in Frameworks */,
 				86A1E4F62E457631002D25FF /* FirebaseRemoteConfig in Frameworks */,
 				86121C282D93864F00FC58A5 /* SwiftfulFirestore in Frameworks */,
 				86BC66F92D91E79300F8960A /* FirebaseAuth in Frameworks */,
 				8641180D2E09811B00EDB5D5 /* FirebaseCrashlytics in Frameworks */,
+				862A00FA2EF0F35000E3F31F /* RevenueCatUI in Frameworks */,
 				8699F6302D95BA1500E36E51 /* FirebaseStorage in Frameworks */,
 				86B528CB2E097BF800C4A1E4 /* Mixpanel in Frameworks */,
 				86B038C92D93782C00AD8651 /* FirebaseFirestore in Frameworks */,
@@ -196,6 +200,8 @@
 				8641180C2E09811B00EDB5D5 /* FirebaseCrashlytics */,
 				86CC520C2E3D04CF003B89A7 /* FirebaseFunctions */,
 				86A1E4F52E457631002D25FF /* FirebaseRemoteConfig */,
+				862A00F72EF0F34F00E3F31F /* RevenueCat */,
+				862A00F92EF0F34F00E3F31F /* RevenueCatUI */,
 			);
 			productName = AIChat;
 			productReference = 86A637742D2F9B530087E26B /* AIChat.app */;
@@ -286,6 +292,7 @@
 				863102582D920C870066A80C /* XCRemoteSwiftPackageReference "SignInAppleAsync" */,
 				86121C262D93808500FC58A5 /* XCRemoteSwiftPackageReference "SwiftfulFirestore" */,
 				86B528C92E097BF800C4A1E4 /* XCRemoteSwiftPackageReference "mixpanel-swift" */,
+				862A00F62EF0F34F00E3F31F /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 86A637752D2F9B530087E26B /* Products */;
@@ -484,7 +491,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AIChat/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "AI Chat - Mock";
+				INFOPLIST_KEY_CFBundleDisplayName = "AI Chat - Dev";
 				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Your data will be used to deliver personalized ads and experiences.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -695,7 +702,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = com.michalkoks.AIChat;
+				PRODUCT_BUNDLE_IDENTIFIER = "-com.michalkoks.AIChat";
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = "com.michalkoks.AIChat-MF";
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = "com.michalkoks.AIChat-MF";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -724,7 +731,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AIChat/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "AI Chat";
+				INFOPLIST_KEY_CFBundleDisplayName = "AI Chat - Dev";
 				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Your data will be used to deliver personalized ads and experiences.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -739,7 +746,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = com.michalkoks.AIChat;
+				PRODUCT_BUNDLE_IDENTIFIER = "-com.michalkoks.AIChat";
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = "com.michalkoks.AIChat-MF";
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = "com.michalkoks.AIChat-MF";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -876,6 +883,14 @@
 				version = 11.0.1;
 			};
 		};
+		862A00F62EF0F34F00E3F31F /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.7.1;
+			};
+		};
 		863102582D920C870066A80C /* XCRemoteSwiftPackageReference "SignInAppleAsync" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SwiftfulThinking/SignInAppleAsync.git";
@@ -923,6 +938,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 86121C262D93808500FC58A5 /* XCRemoteSwiftPackageReference "SwiftfulFirestore" */;
 			productName = SwiftfulFirestore;
+		};
+		862A00F72EF0F34F00E3F31F /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 862A00F62EF0F34F00E3F31F /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
+		};
+		862A00F92EF0F34F00E3F31F /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 862A00F62EF0F34F00E3F31F /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCatUI;
 		};
 		863102592D920C870066A80C /* SignInAppleAsync */ = {
 			isa = XCSwiftPackageProductDependency;
