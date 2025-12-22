@@ -17,6 +17,7 @@ struct SettingsView: View {
     @Environment(ChatManager.self) private var chatManager
     @Environment(AppState.self) private var appState
     @Environment(LogManager.self) private var logManager
+    @Environment(PurchaseManager.self) private var purchaseManager
 
     @State private var isPremium: Bool = false
     @State private var isAnonymousUser: Bool = false
@@ -245,6 +246,7 @@ struct SettingsView: View {
         Task {
             do {
                 try authManager.signOut()
+                try await purchaseManager.logOut()
                 userManager.signOut()
                 logManager.trackEvent(event: Event.signOutSuccess)
                 
@@ -293,6 +295,8 @@ struct SettingsView: View {
                 try await userManager.deleteCurrentUser()
                 
                 try await authManager.deleteAccount()
+                
+                try await purchaseManager.logOut()
                 
                 logManager.deleteUserProfile()
                 logManager.trackEvent(event: Event.deleteAccountSuccess)

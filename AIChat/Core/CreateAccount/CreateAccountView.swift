@@ -13,6 +13,7 @@ struct CreateAccountView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(UserManager.self) private var userManager
     @Environment(LogManager.self) private var logManager
+    @Environment(PurchaseManager.self) private var purchaseManager
 
     var title: String = "Create Account?"
     var subtitle: String = "Don't lose your data! Connect to an SSO provider to save your account."
@@ -98,6 +99,10 @@ struct CreateAccountView: View {
                 logManager.trackEvent(event: Event.appleAuthSuccess(user: result.user, isNewUser: result.isNewUser))
 
                 try await userManager.logIn(auth: result.user, isNewUser: result.isNewUser)
+                try await purchaseManager.logIn(
+                    userId: result.user.uid,
+                    attributes: PurchaseProfileAttributes(email: result.user.email)
+                )
                 logManager.trackEvent(event: Event.appleAuthLoginSuccess(user: result.user, isNewUser: result.isNewUser))
 
                 onDidSignIn?(result.isNewUser)
