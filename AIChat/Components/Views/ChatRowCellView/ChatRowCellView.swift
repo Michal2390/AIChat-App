@@ -13,7 +13,7 @@ struct ChatRowCellView: View {
 
     var imageName: String? = Constants.randomImage
     var headline: String? = "Alpha"
-    var subheadline: String? = "This is the last message in the chat"
+    var subheadline: String? = "This is the last message in the chat."
     var hasNewChat: Bool = true
 
     var body: some View {
