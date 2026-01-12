@@ -103,7 +103,8 @@ struct CreateAccountView: View {
                     userId: result.user.uid,
                     attributes: PurchaseProfileAttributes(
                         email: result.user.email,
-                        firebaseAppInstanceId: FirebaseAnalyticsService.appInstanceId
+                        firebaseAppInstanceId: FirebaseAnalyticsService.appInstanceId,
+                        mixpanelDistinctId: MixpanelService.distinctId
                         )
                 )
                 logManager.trackEvent(event: Event.appleAuthLoginSuccess(user: result.user, isNewUser: result.isNewUser))

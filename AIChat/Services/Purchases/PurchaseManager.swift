@@ -222,6 +222,10 @@ struct RevenueCatPurchaseService: PurchaseService {
         if let firebaseAppInstanceId = attributes.firebaseAppInstanceId {
             Purchases.shared.attribution.setFirebaseAppInstanceID(firebaseAppInstanceId)
         }
+        
+        if let mixpanelDistinictId = attributes.mixpanelDistinictId {
+            Purchases.shared.attribution.setMixpanelDistinctID(mixpanelDistinictId)
+        }
     }
     
     func logOut() async throws {
@@ -232,13 +236,16 @@ struct RevenueCatPurchaseService: PurchaseService {
 struct PurchaseProfileAttributes {
     let email: String?
     let firebaseAppInstanceId: String?
+    let mixpanelDistinictId: String?
     
     init(
         email: String? = nil,
-        firebaseAppInstanceId: String? = nil
+        firebaseAppInstanceId: String? = nil,
+        mixpanelDistinctId: String? = nil
     ) {
         self.email = email
         self.firebaseAppInstanceId = firebaseAppInstanceId
+        self.mixpanelDistinictId = mixpanelDistinctId
     }
 }
 

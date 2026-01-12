@@ -120,7 +120,8 @@ struct AppView: View {
                     userId: user.uid,
                     attributes: PurchaseProfileAttributes(
                         email: user.email,
-                        firebaseAppInstanceId: FirebaseAnalyticsService.appInstanceId
+                        firebaseAppInstanceId: FirebaseAnalyticsService.appInstanceId,
+                        mixpanelDistinctId: MixpanelService.distinctId
                     )
                 )
             } catch {
@@ -142,7 +143,10 @@ struct AppView: View {
                 try await userManager.logIn(auth: result.user, isNewUser: result.isNewUser)
                 try await purchaseManager.logIn(
                     userId: result.user.uid,
-                    attributes: PurchaseProfileAttributes(firebaseAppInstanceId: FirebaseAnalyticsService.appInstanceId)
+                    attributes: PurchaseProfileAttributes(
+                        firebaseAppInstanceId: FirebaseAnalyticsService.appInstanceId,
+                        mixpanelDistinctId: MixpanelService.distinctId
+                    )
                 )
             } catch {
                 logManager.trackEvent(event: Event.anonAuthFail(error: error))
