@@ -118,7 +118,10 @@ struct AppView: View {
                 try await userManager.logIn(auth: user, isNewUser: false)
                 try await purchaseManager.logIn(
                     userId: user.uid,
-                    attributes: PurchaseProfileAttributes(email: user.email)
+                    attributes: PurchaseProfileAttributes(
+                        email: user.email,
+                        firebaseAppInstanceId: FirebaseAnalyticsService.appInstanceId
+                    )
                 )
             } catch {
                 logManager.trackEvent(event: Event.existingAuthFail(error: error))
@@ -137,7 +140,10 @@ struct AppView: View {
 
                 // Log in
                 try await userManager.logIn(auth: result.user, isNewUser: result.isNewUser)
-                try await purchaseManager.logIn(userId: result.user.uid)
+                try await purchaseManager.logIn(
+                    userId: result.user.uid,
+                    attributes: PurchaseProfileAttributes(firebaseAppInstanceId: FirebaseAnalyticsService.appInstanceId)
+                )
             } catch {
                 logManager.trackEvent(event: Event.anonAuthFail(error: error))
                 try? await Task.sleep(for: .seconds(5))
