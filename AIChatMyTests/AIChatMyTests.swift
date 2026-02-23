@@ -1,14 +1,13 @@
 //
-//  AIChatTests.swift
-//  AIChatTests
+//  AIChatMyTests.swift
+//  AIChatMyTests
 //
-//  Created by Michal Fereniec on 09/01/2025.
+//  Created by Michal Fereniec on 23/02/2026.
 //
 
 import Testing
-@testable import AIChat
 
-struct AIChatTests {
+struct AIChatMyTests {
 
     @Test func example() async throws {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.
