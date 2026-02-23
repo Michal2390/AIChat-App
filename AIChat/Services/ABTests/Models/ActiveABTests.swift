@@ -9,29 +9,34 @@ import SwiftUI
 struct ActiveABTests: Codable {
     private(set) var createAccountTest: Bool // I want to mutate it only within the struct
     private(set) var onboardingCommunityTest: Bool
-    private(set) var categoryRowTest: CategoryRowTestOption = .original
+    private(set) var categoryRowTest: CategoryRowTestOption
+    private(set) var paywallTest: PaywallTestOption
     
     init(
         createAccountTest: Bool,
         onboardingCommunityTest: Bool,
-        categoryRowTest: CategoryRowTestOption
+        categoryRowTest: CategoryRowTestOption,
+        paywallTest: PaywallTestOption
     ) {
         self.createAccountTest = createAccountTest
         self.onboardingCommunityTest = onboardingCommunityTest
         self.categoryRowTest = categoryRowTest
+        self.paywallTest = paywallTest
     }
     
     enum CodingKeys: String, CodingKey {
         case createAccountTest = "_202508_CreateAccTest"
         case onboardingCommunityTest = "_202508_OnbCommunityTest"
         case categoryRowTest = "_202508_CategoryRowTest"
+        case paywallTest = "_202502_PaywallTest"
     }
     
     var eventParameters: [String: Any] {
         let dictionary: [String: Any?] = [
             "test\(CodingKeys.createAccountTest.rawValue)": createAccountTest,
             "test\(CodingKeys.onboardingCommunityTest.rawValue)": onboardingCommunityTest,
-            "test\(CodingKeys.categoryRowTest.rawValue)": categoryRowTest.rawValue // I want to send a String to analytics
+            "test\(CodingKeys.categoryRowTest.rawValue)": categoryRowTest.rawValue,
+            "test\(CodingKeys.paywallTest.rawValue)": paywallTest.rawValue // I want to send a String to analytics
         ]
         return dictionary.compactMapValues({ $0 })
     }
@@ -46,6 +51,10 @@ struct ActiveABTests: Codable {
     
     mutating func update(categoryRowTest newValue: CategoryRowTestOption) {
         categoryRowTest = newValue
+    }
+    
+    mutating func update(paywallTest newValue: PaywallTestOption) {
+        paywallTest = newValue
     }
 }
 
@@ -68,6 +77,13 @@ extension ActiveABTests {
         } else {
             self.categoryRowTest = .default
         }
+        
+        let paywallTestStringValue = config.configValue(forKey: ActiveABTests.CodingKeys.paywallTest.rawValue).stringValue
+        if let option = PaywallTestOption(rawValue: paywallTestStringValue) {
+            self.paywallTest = option
+        } else {
+            self.paywallTest = .default
+        }
     }
     
     // Converted to a NSObject dicitonary to setDefaults within FirebaseABTestService
@@ -75,7 +91,8 @@ extension ActiveABTests {
         [
             CodingKeys.createAccountTest.rawValue: createAccountTest as NSObject,
             CodingKeys.onboardingCommunityTest.rawValue: onboardingCommunityTest as NSObject,
-            CodingKeys.categoryRowTest.rawValue: categoryRowTest.rawValue as NSObject
+            CodingKeys.categoryRowTest.rawValue: categoryRowTest.rawValue as NSObject,
+            CodingKeys.paywallTest.rawValue: paywallTest.rawValue as NSObject
         ]
     }
 }

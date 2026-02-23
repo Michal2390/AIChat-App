@@ -18,6 +18,7 @@ struct DevSettingsView: View {
     @State private var createAccountTest: Bool = false
     @State private var onboardingCommunityTest: Bool = false
     @State private var categoryRowTest: CategoryRowTestOption = .default
+    @State private var paywallTest: PaywallTestOption = .default
     
     var body: some View {
         NavigationStack {
@@ -44,6 +45,7 @@ struct DevSettingsView: View {
         createAccountTest = abTestManager.activeTests.createAccountTest
         onboardingCommunityTest = abTestManager.activeTests.onboardingCommunityTest
         categoryRowTest = abTestManager.activeTests.categoryRowTest
+        paywallTest = abTestManager.activeTests.paywallTest
     }
     
     private var backButtonView: some View {
@@ -92,6 +94,17 @@ struct DevSettingsView: View {
         )
     }
     
+    private func handlePaywallTestChange(oldValue: PaywallTestOption, newValue: PaywallTestOption) {
+        updateTest(
+            property: &paywallTest,
+            newValue: newValue,
+            savedValue: abTestManager.activeTests.paywallTest,
+            updateAction: { tests in
+                tests.update(paywallTest: newValue)
+            }
+        )
+    }
+    
     private func updateTest<T: Equatable>(
         property: inout T, // I need to update a Type(Boolean) that is mutable
         newValue: T,
@@ -124,6 +137,12 @@ struct DevSettingsView: View {
             }
             .onChange(of: categoryRowTest, handleCategoryRowTestChange)
             
+            Picker("Paywall Test", selection: $paywallTest) {
+                ForEach(PaywallTestOption.allCases, id: \.self) { option in
+                    Text(option.rawValue)
+                }
+            }
+            .onChange(of: paywallTest, handlePaywallTestChange)
         } header: {
             Text("AB Tests")
         }

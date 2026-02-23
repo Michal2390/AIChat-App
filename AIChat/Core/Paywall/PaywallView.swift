@@ -27,6 +27,7 @@ struct PaywallView: View {
     
     @Environment(PurchaseManager.self) private var purchaseManager
     @Environment(LogManager.self) private var logManager
+    @Environment(ABTestManager.self) private var abTestManager
     @Environment(\.dismiss) private var dismiss
 
     @State private var products: [AnyProduct] = []
@@ -35,28 +36,34 @@ struct PaywallView: View {
 
     var body: some View {
         ZStack {
-            RevenueCatPaywallView()
-//            if products.isEmpty {
-//                ProgressView()
-//            } else {
-//                CustomPaywallView(
-//                    products: products,
-//                    onBackButtonPressed: onBackButtonPressed,
-//                    onRestorePurchasePressed: onRestorePurchasePressed,
-//                    onPurchaseProductPressed: onPurchaseProductPressed
-//                )
-//            }
-        }
-            //        StoreKitPaywallView(
-            //            productIds: productIds,
-            //            onInAppPurchaseStart: onPurchaseStart,
-            //            onInAppPurchaseCompletion: onPurchaseComplete
-            //        )
-            .screenAppearAnalytics(name: "Paywall")
-            .showCustomAlert(alert: $showAlert)
-            .task {
-                await onLoadProducts()
+            switch abTestManager.activeTests.paywallTest {
+            case .custom:
+                if products.isEmpty {
+                    ProgressView()
+                } else {
+                    CustomPaywallView(
+                        products: products,
+                        onBackButtonPressed: onBackButtonPressed,
+                        onRestorePurchasePressed: onRestorePurchasePressed,
+                        onPurchaseProductPressed: onPurchaseProductPressed
+                    )
+                }
+            case .revenueCat:
+                RevenueCatPaywallView()
+                
+            case .storeKit:
+                StoreKitPaywallView(
+                    productIds: productIds,
+                    onInAppPurchaseStart: onPurchaseStart,
+                    onInAppPurchaseCompletion: onPurchaseComplete
+                )
             }
+        }
+        .screenAppearAnalytics(name: "Paywall")
+        .showCustomAlert(alert: $showAlert)
+        .task {
+            await onLoadProducts()
+        }
     }
     
     private func onLoadProducts() async {
@@ -180,6 +187,20 @@ struct PaywallView: View {
     
 }
 
-#Preview {
+#Preview("Custom") {
     PaywallView()
+        .environment(ABTestManager(service: MockABTestService(paywallTest: .custom)))
+        .previewEnvironment()
+}
+
+#Preview("StoreKit") {
+    PaywallView()
+        .environment(ABTestManager(service: MockABTestService(paywallTest: .storeKit)))
+        .previewEnvironment()
+}
+
+#Preview("RevenueCat") {
+    PaywallView()
+        .environment(ABTestManager(service: MockABTestService(paywallTest: .revenueCat)))
+        .previewEnvironment()
 }
