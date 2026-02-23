@@ -134,7 +134,7 @@ struct AppView: View {
             logManager.trackEvent(event: Event.anonAuthStart)
 
             do {
-                let result = try await authManager.signInAnynomously()
+                let result = try await authManager.signInAnonymously()
 
                 // log in to app
                 logManager.trackEvent(event: Event.anonAuthSuccess)

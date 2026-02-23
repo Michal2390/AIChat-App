@@ -5,10 +5,11 @@
 //  Created by Michal Fereniec on 24/03/2025.
 //
 
-import FirebaseAuth
+@preconcurrency import FirebaseAuth
 import SwiftUI
 import SignInAppleAsync
 
+@MainActor
 struct FirebaseAuthService: AuthService {
 
     func addAuthenticatedUserListener(onListenerAttached: (any NSObjectProtocol) -> Void) -> AsyncStream<UserAuthInfo?> {
@@ -43,7 +44,7 @@ struct FirebaseAuthService: AuthService {
     }
 
     func signInApple() async throws -> (user: UserAuthInfo, isNewUser: Bool) {
-        let helper = await SignInWithAppleHelper()
+        let helper = SignInWithAppleHelper()
         let response = try await helper.signIn()
 
         let credential = OAuthProvider.credential(

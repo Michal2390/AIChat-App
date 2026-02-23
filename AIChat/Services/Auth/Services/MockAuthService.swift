@@ -6,9 +6,10 @@
 //
 import Foundation
 
-struct MockAuthService: AuthService {
+@MainActor
+class MockAuthService: AuthService {
 
-    let currentUser: UserAuthInfo?
+    @Published var currentUser: UserAuthInfo?
 
     init(user: UserAuthInfo? = nil) {
         self.currentUser = user
@@ -17,6 +18,12 @@ struct MockAuthService: AuthService {
     func addAuthenticatedUserListener(onListenerAttached: (any NSObjectProtocol) -> Void) -> AsyncStream<UserAuthInfo?> {
         AsyncStream { continuation in
             continuation.yield(currentUser)
+            
+            Task {
+                for await value in $currentUser.values {
+                    continuation.yield(value)
+                }
+            }
         }
     }
     
@@ -30,6 +37,7 @@ struct MockAuthService: AuthService {
 
     func signInAnynomously() async throws -> (user: UserAuthInfo, isNewUser: Bool) {
         let user = UserAuthInfo.mock(isAnonymous: true)
+        currentUser = user
         return (user, true)
     }
 

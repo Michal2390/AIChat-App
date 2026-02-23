@@ -7,7 +7,8 @@
 import SwiftUI
 import Foundation
 
-protocol AuthService: Sendable {
+@MainActor
+protocol AuthService {
     func addAuthenticatedUserListener(onListenerAttached: (any NSObjectProtocol) -> Void) -> AsyncStream<UserAuthInfo?>
     func removeAuthenticatedUserListener(listener: any NSObjectProtocol)
     func getAuthenticatedUser() -> UserAuthInfo?
