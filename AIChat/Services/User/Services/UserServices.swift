@@ -4,11 +4,13 @@
 //
 //  Created by Michal Fereniec on 26/03/2025.
 //
+@MainActor
 protocol UserServices {
     var remote: RemoteUserService { get }
     var local: LocalUserPersistence { get }
 }
 
+@MainActor
 struct MockUserServices: UserServices {
     let remote: RemoteUserService
     let local: LocalUserPersistence
