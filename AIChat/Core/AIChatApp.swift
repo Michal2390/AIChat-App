@@ -120,7 +120,11 @@ struct Dependencies {
             aiManager = AIManager(service: MockAIService())
             avatarManager = AvatarManager(remote: MockAvatarService(), local: MockLocalAvatarPersistence())
             chatManager = ChatManager(service: MockChatService())
-            abTestManager = ABTestManager(service: MockABTestService(), logManager: logManager)
+            let isInOnboardingCommunityTest = ProcessInfo.processInfo.arguments.contains("ONCOMMTEST")
+            let abTestService = MockABTestService(
+                onboardingCommunityTest: isInOnboardingCommunityTest
+            )
+            abTestManager = ABTestManager(service: abTestService, logManager: logManager)
             purchaseManager = PurchaseManager(service: MockPurchaseService(), logManager: logManager)
         case .dev:
             logManager = LogManager(services: [

@@ -186,6 +186,7 @@ struct ChatView: View {
             .autocorrectionDisabled()
             .padding(12)
             .padding(.trailing, 40)
+            .accessibilityIdentifier("ChatTextField")
             .overlay(
                 Image(systemName: "arrow.up.circle.fill")
                     .font(.system(size: 32))
