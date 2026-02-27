@@ -84,7 +84,7 @@ class UserManager {
     func deleteCurrentUser() async throws {
         logManager?.trackEvent(event: Event.deleteAccountStart)
         
-        let uid = try currentUserId()
+        _ = try currentUserId()
         try await remote.deleteUser(userId: currentUser?.userId ?? "")
         logManager?.trackEvent(event: Event.deleteAccountSuccess)
         

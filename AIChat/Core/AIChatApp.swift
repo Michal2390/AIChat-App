@@ -102,7 +102,7 @@ enum BuildConfiguration {
     
     func configure() {
         switch self {
-        case .mock(let isSignedIn):
+        case .mock(_):
             // Mock build does NOT run Firebase
             break
         case .dev:
