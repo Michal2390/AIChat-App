@@ -7,53 +7,75 @@
 
 import SwiftUI
 
-struct ProfileView: View {
+@Observable
+@MainActor
+class ProfileViewModel {
+    
+    private let authManager: AuthManager
+    private let userManager: UserManager
+    private let avatarManager: AvatarManager
+    private let logManager: LogManager
+        
+    private(set) var currentUser: UserModel?
+    private(set) var myAvatars: [AvatarModel] = []
+    private(set) var isLoading: Bool = true
+    
+    var showSettingsView: Bool = false
+    var showCreateAvatarView: Bool = false
+    var showAlert: AnyAppAlert?
+    var path: [NavigationPathOption] = []
+    
+    init(authManager: AuthManager, userManager: UserManager, avatarManager: AvatarManager, logManager: LogManager) {
+        self.authManager = authManager
+        self.userManager = userManager
+        self.avatarManager = avatarManager
+        self.logManager = logManager
+    }
 
-    @Environment(UserManager.self) private var userManager
-    @Environment(AvatarManager.self) private var avatarManager
-    @Environment(AuthManager.self) private var authManager
-    @Environment(LogManager.self) private var logManager
+    func loadData() async {
+        self.currentUser = userManager.currentUser
+        logManager.trackEvent(event: Event.loadAvatarsStart)
 
-    @State private var showSettingsView: Bool = false
-    @State private var showCreateAvatarView: Bool = false
-    @State private var currentUser: UserModel?
-    @State private var myAvatars: [AvatarModel] = []
-    @State private var isLoading: Bool = true
-    @State private var showAlert: AnyAppAlert?
-
-    @State private var path: [NavigationPathOption] = []
-
-    var body: some View {
-        NavigationStack(path: $path) {
-            List {
-                myInfoSection
-                myAvatarsSection
-            }
-            .navigationTitle("Profile")
-            .navigationDestinationForCoreModule(path: $path)
-            .showCustomAlert(alert: $showAlert)
-            .screenAppearAnalytics(name: "ProfileView")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    settingsButton
-                }
-            }
+        do {
+            let uid = try authManager.getAuthId()
+            myAvatars = try await avatarManager.getAvatarsForAuthor(userId: uid)
+            logManager.trackEvent(event: Event.loadAvatarsSuccess(count: myAvatars.count))
+        } catch {
+            logManager.trackEvent(event: Event.loadAvatarsFail(error: error))
         }
-        .sheet(isPresented: $showSettingsView) {
-            SettingsView()
-        }
-        .fullScreenCover(isPresented: $showCreateAvatarView, onDismiss: {
-            Task {
-                await loadData()
+        try? await Task.sleep(for: .seconds(5))
+        isLoading = false
+    }
+    
+    func onSettingsButtonPressed() {
+        showSettingsView = true
+        logManager.trackEvent(event: Event.settingsPressed)
+    }
+
+    func onNewAvatarButtonPressed() {
+        showCreateAvatarView = true
+        logManager.trackEvent(event: Event.newAvatarPressed)
+    }
+
+    func onAvatarPressed(avatar: AvatarModel) {
+        path.append(.chat(avatarId: avatar.avatarId, chat: nil))
+        logManager.trackEvent(event: Event.avatarPressed(avatar: avatar))
+    }
+
+    func onDeleteAvatar(indexSet: IndexSet) {
+        guard let index = indexSet.first else { return }
+        let avatar = myAvatars[index]
+        logManager.trackEvent(event: Event.deleteAvatarStart(avatar: avatar))
+
+        Task {
+            do {
+                try await avatarManager.removeAuthorIdFromAvatar(avatarId: avatar.id)
+                myAvatars.remove(at: index)
+                logManager.trackEvent(event: Event.deleteAvatarSuccess(avatar: avatar))
+            } catch {
+                showAlert = AnyAppAlert(title: "Unable to delete avatar", subtitle: "Please try again.")
+                logManager.trackEvent(event: Event.deleteAvatarFail(error: error))
             }
-        }, content: {
-            CreateAvatarView()
-        })
-        .fullScreenCover(isPresented: $showCreateAvatarView) {
-            CreateAvatarView()
-        }
-        .task {
-            await loadData()
         }
     }
     
@@ -105,27 +127,48 @@ struct ProfileView: View {
             }
         }
     }
+}
 
-    private func loadData() async {
-        self.currentUser = userManager.currentUser
-        logManager.trackEvent(event: Event.loadAvatarsStart)
+struct ProfileView: View {
+    
+    @State var viewModel: ProfileViewModel
 
-        do {
-            let uid = try authManager.getAuthId()
-            myAvatars = try await avatarManager.getAvatarsForAuthor(userId: uid)
-            logManager.trackEvent(event: Event.loadAvatarsSuccess(count: myAvatars.count))
-        } catch {
-            logManager.trackEvent(event: Event.loadAvatarsFail(error: error))
+    var body: some View {
+        NavigationStack(path: $viewModel.path) {
+            List {
+                myInfoSection
+                myAvatarsSection
+            }
+            .navigationTitle("Profile")
+            .navigationDestinationForCoreModule(path: $viewModel.path)
+            .showCustomAlert(alert: $viewModel.showAlert)
+            .screenAppearAnalytics(name: "ProfileView")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    settingsButton
+                }
+            }
         }
-        try? await Task.sleep(for: .seconds(5))
-        isLoading = false
+        .sheet(isPresented: $viewModel.showSettingsView) {
+            SettingsView()
+        }
+        .fullScreenCover(isPresented: $viewModel.showCreateAvatarView, onDismiss: {
+            Task {
+                await viewModel.loadData()
+            }
+        }, content: {
+            CreateAvatarView()
+        })
+        .task {
+            await viewModel.loadData()
+        }
     }
 
     private var myInfoSection: some View {
         Section {
             ZStack {
                 Circle()
-                    .fill(currentUser?.profileColorCalculated ?? .accent)
+                    .fill(viewModel.currentUser?.profileColorCalculated ?? .accent)
             }
             .frame(width: 100, height: 100)
             .frame(maxWidth: .infinity)
@@ -135,9 +178,9 @@ struct ProfileView: View {
 
     private var myAvatarsSection: some View {
         Section {
-            if myAvatars.isEmpty {
+            if viewModel.myAvatars.isEmpty {
                 Group {
-                    if isLoading {
+                    if viewModel.isLoading {
                         ProgressView()
                     } else {
                         Text("Click + to create an avatar")
@@ -149,19 +192,19 @@ struct ProfileView: View {
                 .foregroundStyle(.secondary)
                 .removeListRowFormatting()
             }
-            ForEach(myAvatars, id: \.self) { avatar in
+            ForEach(viewModel.myAvatars, id: \.self) { avatar in
                 CustomListCellView(
                     imageName: avatar.profileImageName,
                     title: avatar.name,
                     subtitle: nil
                 )
                 .anyButton(.highlight, action: {
-                    onAvatarPressed(avatar: avatar)
+                    viewModel.onAvatarPressed(avatar: avatar)
                 })
                 .removeListRowFormatting()
             }
             .onDelete { indexSet in
-                onDeleteAvatar(indexSet: indexSet)
+                viewModel.onDeleteAvatar(indexSet: indexSet)
             }
         } header: {
             HStack(spacing: 0) {
@@ -174,7 +217,7 @@ struct ProfileView: View {
                     .font(.title)
                     .foregroundStyle(.accent)
                     .anyButton {
-                        onNewAvatarButtonPressed()
+                        viewModel.onNewAvatarButtonPressed()
                     }
             }
         }
@@ -185,44 +228,18 @@ struct ProfileView: View {
             .font(.headline)
             .foregroundStyle(.accent)
             .anyButton {
-                onSettingsButtonPressed()
+                viewModel.onSettingsButtonPressed()
             }
-    }
-
-    private func onSettingsButtonPressed() {
-        showSettingsView = true
-        logManager.trackEvent(event: Event.settingsPressed)
-    }
-
-    private func onNewAvatarButtonPressed() {
-        showCreateAvatarView = true
-        logManager.trackEvent(event: Event.newAvatarPressed)
-    }
-
-    private func onAvatarPressed(avatar: AvatarModel) {
-        path.append(.chat(avatarId: avatar.avatarId, chat: nil))
-        logManager.trackEvent(event: Event.avatarPressed(avatar: avatar))
-    }
-
-    private func onDeleteAvatar(indexSet: IndexSet) {
-        guard let index = indexSet.first else { return }
-        let avatar = myAvatars[index]
-        logManager.trackEvent(event: Event.deleteAvatarStart(avatar: avatar))
-
-        Task {
-            do {
-                try await avatarManager.removeAuthorIdFromAvatar(avatarId: avatar.id)
-                myAvatars.remove(at: index)
-                logManager.trackEvent(event: Event.deleteAvatarSuccess(avatar: avatar))
-            } catch {
-                showAlert = AnyAppAlert(title: "Unable to delete avatar", subtitle: "Please try again.")
-                logManager.trackEvent(event: Event.deleteAvatarFail(error: error))
-            }
-        }
     }
 }
 
 #Preview {
-    ProfileView()
-        .previewEnvironment()
+    ProfileView(
+        viewModel: ProfileViewModel(
+            authManager: DevPreview.shared.authManager,
+            userManager: DevPreview.shared.userManager,
+            avatarManager: DevPreview.shared.avatarManager,
+            logManager: DevPreview.shared.logManager
+        )
+    )
 }

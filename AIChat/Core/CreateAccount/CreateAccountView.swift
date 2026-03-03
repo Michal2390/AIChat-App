@@ -82,7 +82,7 @@ struct CreateAccountView: View {
         
         var type: LogType {
             switch self {
-            case .appleAuthFail(error: _):
+            case .appleAuthFail:
                 return .severe
             default:
                 return .analytic
