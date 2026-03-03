@@ -42,6 +42,7 @@ struct AIChatApp: App {
                     AppView()
                 }
             }
+            .environment(delegate.dependencies.container)
             .environment(delegate.dependencies.purchaseManager)
             .environment(delegate.dependencies.abTestManager)
             .environment(delegate.dependencies.pushManager)
@@ -118,8 +119,30 @@ enum BuildConfiguration {
     }
 }
 
+@Observable
+@MainActor
+class DependencyContainer {
+    private var services: [String: Any] = [:]
+    
+    func register<T>(_ type: T.Type, service: T) {
+        let key = "\(type)"
+        services[key] = service
+    }
+    
+    func register<T>(_ type: T.Type, service: () -> T) {
+        let key = "\(type)"
+        services[key] = service()
+    }
+    
+    func resolve<T>(_ type: T.Type) -> T? {
+        let key = "\(type)"
+        return services[key] as? T
+    }
+}
+
 @MainActor
 struct Dependencies {
+    let container: DependencyContainer
     let authManager: AuthManager
     let userManager: UserManager
     let aiManager: AIManager
@@ -130,8 +153,8 @@ struct Dependencies {
     let abTestManager: ABTestManager
     let purchaseManager: PurchaseManager
     
+    // swiftlint:disable:next function_body_length
     init(config: BuildConfiguration) {
-        
         switch config {
         case .mock(isSignedIn: let isSignedIn):
             logManager = LogManager(services: [
@@ -180,6 +203,18 @@ struct Dependencies {
         }
         
         pushManager = PushManager(logManager: logManager)
+        
+        let container = DependencyContainer()
+        container.register(AuthManager.self, service: authManager)
+        container.register(UserManager.self, service: userManager)
+        container.register(AIManager.self, service: aiManager)
+        container.register(AvatarManager.self, service: avatarManager)
+        container.register(ChatManager.self, service: chatManager)
+        container.register(LogManager.self, service: logManager)
+        container.register(PushManager.self, service: pushManager)
+        container.register(ABTestManager.self, service: abTestManager)
+        container.register(PurchaseManager.self, service: purchaseManager)
+        self.container = container
     }
 }
 
@@ -203,6 +238,19 @@ extension View {
 class DevPreview {
     static let shared = DevPreview()
     
+    var container: DependencyContainer {
+        let container = DependencyContainer()
+        container.register(AuthManager.self, service: authManager)
+        container.register(UserManager.self, service: userManager)
+        container.register(AIManager.self, service: aiManager)
+        container.register(AvatarManager.self, service: avatarManager)
+        container.register(ChatManager.self, service: chatManager)
+        container.register(LogManager.self, service: logManager)
+        container.register(PushManager.self, service: pushManager)
+        container.register(ABTestManager.self, service: abTestManager)
+        container.register(PurchaseManager.self, service: purchaseManager)
+        return container
+    }
     let authManager: AuthManager
     let userManager: UserManager
     let aiManager: AIManager
