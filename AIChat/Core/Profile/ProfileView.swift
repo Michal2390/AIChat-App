@@ -15,7 +15,6 @@ class ProfileViewModel {
     let userManager: UserManager
     let avatarManager: AvatarManager
     let logManager: LogManager
-    let aiManager: AIManager
         
     private(set) var currentUser: UserModel?
     private(set) var myAvatars: [AvatarModel] = []
@@ -26,12 +25,11 @@ class ProfileViewModel {
     var showAlert: AnyAppAlert?
     var path: [NavigationPathOption] = []
     
-    init(authManager: AuthManager, userManager: UserManager, avatarManager: AvatarManager, logManager: LogManager, aiManager: AIManager) {
-        self.authManager = authManager
-        self.userManager = userManager
-        self.avatarManager = avatarManager
-        self.logManager = logManager
-        self.aiManager = aiManager
+    init(container: DependencyContainer) {
+        self.authManager = container.resolve(AuthManager.self)!
+        self.userManager = container.resolve(UserManager.self)!
+        self.avatarManager = container.resolve(AvatarManager.self)!
+        self.logManager = container.resolve(LogManager.self)!
     }
 
     func loadData() async {
@@ -133,6 +131,7 @@ class ProfileViewModel {
 
 struct ProfileView: View {
     
+    @Environment(DependencyContainer.self) private var container
     @State var viewModel: ProfileViewModel
 
     var body: some View {
@@ -162,14 +161,7 @@ struct ProfileView: View {
                 }
             },
             content: {
-                CreateAvatarView(
-                    viewModel: CreateAvatarViewModel(
-                        authManager: viewModel.authManager,
-                        aiManager: viewModel.aiManager,
-                        avatarManager: viewModel.avatarManager,
-                        logManager: viewModel.logManager
-                    )
-                )
+                CreateAvatarView(viewModel: CreateAvatarViewModel(container: container))
         })
         .task {
             await viewModel.loadData()
@@ -247,13 +239,7 @@ struct ProfileView: View {
 
 #Preview {
     ProfileView(
-        viewModel: ProfileViewModel(
-            authManager: DevPreview.shared.authManager,
-            userManager: DevPreview.shared.userManager,
-            avatarManager: DevPreview.shared.avatarManager,
-            logManager: DevPreview.shared.logManager,
-            aiManager: DevPreview.shared.aiManager
-        )
+        viewModel: ProfileViewModel(container: DevPreview.shared.container)
     )
     .previewEnvironment()
 }
