@@ -7,152 +7,90 @@
 
 import SwiftUI
 
-struct CreateAvatarView: View {
+@Observable
+@MainActor
+class CreateAvatarViewModel {
+    let authManager: AuthManager
+    let aiManager: AIManager
+    let avatarManager: AvatarManager
+    let logManager: LogManager
+    
+    private(set) var isGenerating: Bool = false
+    private(set) var generatedImage: UIImage?
+    private(set) var isSaving: Bool = false
+    
+    var characterOption: CharacterOption = .default
+    var characterAction: CharacterAction = .default
+    var characterLocation: CharacterLocation = .default
+    var avatarName: String = ""
+    var showAlert: AnyAppAlert?
 
-    @Environment(\.dismiss) private var dismiss
-    @Environment(AIManager.self) private var aiManager
-    @Environment(AuthManager.self) private var authManager
-    @Environment(AvatarManager.self) private var avatarManager
-    @Environment(LogManager.self) private var logManager
+    init(authManager: AuthManager, aiManager: AIManager, avatarManager: AvatarManager, logManager: LogManager) {
+        self.authManager = authManager
+        self.aiManager = aiManager
+        self.avatarManager = avatarManager
+        self.logManager = logManager
+        }
+    
+    func onBackButtonPressed(onDismiss: () -> Void) {
+        logManager.trackEvent(event: Event.backButtonPressed)
+        onDismiss()
+    }
 
-    @State private var avatarName: String = ""
-    @State private var characterOption: CharacterOption = .default
-    @State private var characterAction: CharacterAction = .default
-    @State private var characterLocation: CharacterLocation = .default
+    func onGenerateImagePressed() {
+        logManager.trackEvent(event: Event.generateImageStart)
+        isGenerating = true
 
-    @State private var isGenerating: Bool = false
-    @State private var generatedImage: UIImage?
-    @State private var showAlert: AnyAppAlert?
+        Task {
+            do {
+                let avatarDescriptionBuilder = AvatarDescriptionBuilder(
+                    characterOption: characterOption,
+                    characterAction: characterAction,
+                    characterLocation: characterLocation
+                )
+                let prompt = avatarDescriptionBuilder.characterDescription
 
-    @State private var isSaving: Bool = false
-
-    var body: some View {
-        NavigationStack {
-            List {
-                nameSection
-                attributesSection
-                imageSection
-                saveSection
+                generatedImage = try await aiManager.generateImage(input: prompt)
+                logManager.trackEvent(event: Event.generateImageSuccess(avatarDescriptionBuilder: avatarDescriptionBuilder))
+            } catch {
+                logManager.trackEvent(event: Event.generateImageFail(error: error))
             }
-            .navigationTitle("Create Avatar")
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    backButton
-                }
-            }
-            .showCustomAlert(alert: $showAlert)
-            .screenAppearAnalytics(name: "CreateAvatarView")
+
+            isGenerating = false
         }
     }
 
-    private var backButton: some View {
-        Image(systemName: "xmark")
-            .font(.title2)
-            .fontWeight(.semibold)
-            .anyButton(.plain) {
-                onBackButtonPressed()
+    func onSavePressed(onDismiss: @escaping () -> Void) {
+        logManager.trackEvent(event: Event.saveAvatarStart)
+        guard let generatedImage else { return } // this should never fail
+
+        isSaving = true
+
+        Task {
+            do {
+                try TextValidationHelper.checkIfTextIsValid(text: avatarName, minimumCharacterCount: 3)
+                let uid = try authManager.getAuthId()
+
+                let avatar = AvatarModel.newAvatar(
+                    name: avatarName,
+                    option: characterOption,
+                    action: characterAction,
+                    location: characterLocation,
+                    authorId: uid
+                )
+
+                try await avatarManager.createAvatar(avatar: avatar, image: generatedImage)
+
+                // Dismiss screen
+                onDismiss()
+                logManager.trackEvent(event: Event.saveAvatarSuccess(avatar: avatar))
+            } catch {
+                logManager.trackEvent(event: Event.saveAvatarFail(error: error))
             }
-    }
-
-    private var nameSection: some View {
-        Section {
-            TextField("Player 1", text: $avatarName)
-        } header: {
-            Text("Name your avatar*")
-                .lineLimit(1)
-                .minimumScaleFactor(0.3)
+            isSaving = false
         }
     }
-
-    private var attributesSection: some View {
-        Section {
-            VStack(spacing: 4) {
-                Picker(selection: $characterOption) {
-                    ForEach(CharacterOption.allCases, id: \.self) { option in
-                        Text(option.rawValue.capitalized)
-                            .tag(option)
-                    }
-                } label: {
-                    Text("is a...")
-                }
-
-                Picker(selection: $characterAction) {
-                    ForEach(CharacterAction.allCases, id: \.self) { option in
-                        Text(option.rawValue.capitalized)
-                            .tag(option)
-                    }
-                } label: {
-                    Text("that is...")
-                }
-
-                Picker(selection: $characterLocation) {
-                    ForEach(CharacterLocation.allCases, id: \.self) { option in
-                        Text(option.rawValue.capitalized)
-                            .tag(option)
-                    }
-                } label: {
-                    Text("in the...")
-                }
-            }
-        } header: {
-            Text("Attributes")
-        }
-    }
-
-    private var imageSection: some View {
-        Section {
-            HStack(alignment: .top, spacing: 8) {
-                ZStack {
-                    Text("Generate image")
-                        .underline()
-                        .foregroundStyle(.accent)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.2)
-                        .anyButton(.plain) {
-                            onGenerateImagePressed()
-                        }
-                        .opacity(isGenerating ? 0 : 1)
-
-                    ProgressView()
-                        .tint(.accent)
-                        .opacity(isGenerating ? 1 : 0)
-                }
-                .disabled(isGenerating || avatarName.isEmpty)
-
-                Circle()
-                    .fill(Color.secondary.opacity(0.3))
-                    .overlay {
-                        ZStack {
-                            if let generatedImage {
-                                Image(uiImage: generatedImage)
-                                    .resizable()
-                                    .scaledToFill()
-                            }
-                        }
-                    }
-                    .clipShape(Circle())
-                    .frame(maxWidth: .infinity, maxHeight: 400)
-            }
-        }
-        .removeListRowFormatting()
-    }
-
-    private var saveSection: some View {
-        Section {
-            AsyncCallToActionButton(
-                isLoading: isSaving,
-                title: "Save",
-                action: onSavePressed
-            )
-            .removeListRowFormatting()
-            .padding(.top, 24)
-            .opacity(generatedImage == nil ? 0.5 : 1.0)
-            .disabled(generatedImage == nil)
-            .frame(maxWidth: 500)
-            .frame(maxWidth: .infinity)
-        }
-    }
-
+    
     enum Event: LoggableEvent {
         case backButtonPressed
         case generateImageStart
@@ -198,70 +136,156 @@ struct CreateAvatarView: View {
         }
     }
     
-    private func onBackButtonPressed() {
-        logManager.trackEvent(event: Event.backButtonPressed)
-        dismiss()
-    }
+}
 
-    private func onGenerateImagePressed() {
-        logManager.trackEvent(event: Event.generateImageStart)
-        isGenerating = true
+struct CreateAvatarView: View {
 
-        Task {
-            do {
-                let avatarDescriptionBuilder = AvatarDescriptionBuilder(
-                    characterOption: characterOption,
-                    characterAction: characterAction,
-                    characterLocation: characterLocation
-                )
-                let prompt = avatarDescriptionBuilder.characterDescription
+    @Environment(\.dismiss) private var dismiss
 
-                generatedImage = try await aiManager.generateImage(input: prompt)
-                logManager.trackEvent(event: Event.generateImageSuccess(avatarDescriptionBuilder: avatarDescriptionBuilder))
-            } catch {
-                logManager.trackEvent(event: Event.generateImageFail(error: error))
+    @State var viewModel: CreateAvatarViewModel
+
+    var body: some View {
+        NavigationStack {
+            List {
+                nameSection
+                attributesSection
+                imageSection
+                saveSection
             }
-
-            isGenerating = false
+            .navigationTitle("Create Avatar")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    backButton
+                }
+            }
+            .showCustomAlert(alert: $viewModel.showAlert)
+            .screenAppearAnalytics(name: "CreateAvatarView")
         }
     }
 
-    private func onSavePressed() {
-        logManager.trackEvent(event: Event.saveAvatarStart)
-        guard let generatedImage else { return } // this should never fail
-
-        isSaving = true
-
-        Task {
-            do {
-                try TextValidationHelper.checkIfTextIsValid(text: avatarName, minimumCharacterCount: 3)
-                let uid = try authManager.getAuthId()
-
-                let avatar = AvatarModel.newAvatar(
-                    name: avatarName,
-                    option: characterOption,
-                    action: characterAction,
-                    location: characterLocation,
-                    authorId: uid
-                )
-
-                try await avatarManager.createAvatar(avatar: avatar, image: generatedImage)
-
-                // Dismiss screen
-                dismiss()
-                logManager.trackEvent(event: Event.saveAvatarSuccess(avatar: avatar))
-            } catch {
-                logManager.trackEvent(event: Event.saveAvatarFail(error: error))
+    private var backButton: some View {
+        Image(systemName: "xmark")
+            .font(.title2)
+            .fontWeight(.semibold)
+            .anyButton(.plain) {
+                viewModel.onBackButtonPressed(onDismiss: {
+                    dismiss()
+                })
             }
-            isSaving = false
+    }
+
+    private var nameSection: some View {
+        Section {
+            TextField("Player 1", text: $viewModel.avatarName)
+        } header: {
+            Text("Name your avatar*")
+                .lineLimit(1)
+                .minimumScaleFactor(0.3)
+        }
+    }
+
+    private var attributesSection: some View {
+        Section {
+            VStack(spacing: 4) {
+                Picker(selection: $viewModel.characterOption) {
+                    ForEach(CharacterOption.allCases, id: \.self) { option in
+                        Text(option.rawValue.capitalized)
+                            .tag(option)
+                    }
+                } label: {
+                    Text("is a...")
+                }
+
+                Picker(selection: $viewModel.characterAction) {
+                    ForEach(CharacterAction.allCases, id: \.self) { option in
+                        Text(option.rawValue.capitalized)
+                            .tag(option)
+                    }
+                } label: {
+                    Text("that is...")
+                }
+
+                Picker(selection: $viewModel.characterLocation) {
+                    ForEach(CharacterLocation.allCases, id: \.self) { option in
+                        Text(option.rawValue.capitalized)
+                            .tag(option)
+                    }
+                } label: {
+                    Text("in the...")
+                }
+            }
+        } header: {
+            Text("Attributes")
+        }
+    }
+
+    private var imageSection: some View {
+        Section {
+            HStack(alignment: .top, spacing: 8) {
+                ZStack {
+                    Text("Generate image")
+                        .underline()
+                        .foregroundStyle(.accent)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.2)
+                        .anyButton(.plain) {
+                            viewModel.onGenerateImagePressed()
+                        }
+                        .opacity(viewModel.isGenerating ? 0 : 1)
+
+                    ProgressView()
+                        .tint(.accent)
+                        .opacity(viewModel.isGenerating ? 1 : 0)
+                }
+                .disabled(viewModel.isGenerating || viewModel.avatarName.isEmpty)
+
+                Circle()
+                    .fill(Color.secondary.opacity(0.3))
+                    .overlay {
+                        ZStack {
+                            if let generatedImage = viewModel.generatedImage {
+                                Image(uiImage: generatedImage)
+                                    .resizable()
+                                    .scaledToFill()
+                            }
+                        }
+                    }
+                    .clipShape(Circle())
+                    .frame(maxWidth: .infinity, maxHeight: 400)
+            }
+        }
+        .removeListRowFormatting()
+    }
+
+    private var saveSection: some View {
+        Section {
+            AsyncCallToActionButton(
+                isLoading: viewModel.isSaving,
+                title: "Save",
+                action: {
+                    viewModel.onSavePressed(onDismiss: {
+                        dismiss()
+                    })
+                }
+            )
+            .removeListRowFormatting()
+            .padding(.top, 24)
+            .opacity(viewModel.generatedImage == nil ? 0.5 : 1.0)
+            .disabled(viewModel.generatedImage == nil)
+            .frame(maxWidth: 500)
+            .frame(maxWidth: .infinity)
         }
     }
 }
 
 #Preview {
-    CreateAvatarView()
-        .environment(AIManager(service: MockAIService()))
-        .environment(AvatarManager(remote: MockAvatarService(), local: MockLocalAvatarPersistence()))
-        .environment(AuthManager(service: MockAuthService(user: .mock())))
-        .previewEnvironment()
+    CreateAvatarView(
+        viewModel: CreateAvatarViewModel(
+            authManager: DevPreview.shared.authManager,
+            aiManager: DevPreview.shared.aiManager,
+            avatarManager: DevPreview.shared.avatarManager,
+            logManager: DevPreview.shared.logManager
+        )
+    )
+    .previewEnvironment()
 }

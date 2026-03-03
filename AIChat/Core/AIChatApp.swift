@@ -63,7 +63,8 @@ struct AppViewForUITesting: View {
     
     var body: some View {
         if startOnAvatarScreen {
-            CreateAvatarView()
+            // CreateAvatarView()
+            Text("Fix me my G pls")
         } else {
             AppView()
         }
@@ -102,7 +103,7 @@ enum BuildConfiguration {
     
     func configure() {
         switch self {
-        case .mock(_):
+        case .mock:
             // Mock build does NOT run Firebase
             break
         case .dev:
@@ -195,5 +196,32 @@ extension View {
             .environment(AvatarManager(remote: MockAvatarService(), local: MockLocalAvatarPersistence()))
             .environment(AppState())
             .environment(LogManager(services: []))
+    }
+}
+
+@MainActor
+class DevPreview {
+    static let shared = DevPreview()
+    
+    let authManager: AuthManager
+    let userManager: UserManager
+    let aiManager: AIManager
+    let avatarManager: AvatarManager
+    let chatManager: ChatManager
+    let logManager: LogManager
+    let pushManager: PushManager
+    let abTestManager: ABTestManager
+    let purchaseManager: PurchaseManager
+    
+    init(isSignedIn: Bool = true) {
+        self.authManager = AuthManager(service: MockAuthService(user: isSignedIn ? .mock() : nil))
+        self.userManager = UserManager(services: MockUserServices(user: isSignedIn ? .mock : nil))
+        self.aiManager = AIManager(service: MockAIService())
+        self.avatarManager = AvatarManager(remote: MockAvatarService(), local: MockLocalAvatarPersistence())
+        self.chatManager = ChatManager(service: MockChatService())
+        self.logManager = LogManager(services: [])
+        self.pushManager = PushManager()
+        self.abTestManager = ABTestManager(service: MockABTestService())
+        self.purchaseManager = PurchaseManager(service: MockPurchaseService())
     }
 }
