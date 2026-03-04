@@ -12,16 +12,26 @@ enum NavigationPathOption: Hashable {
     case category(category: CharacterOption, imageName: String)
 }
 
-extension View {
-    func navigationDestinationForCoreModule(path: Binding<[NavigationPathOption]>) -> some View {
-        self
+struct NavigationDestinationForCoreModuleViewModifier: ViewModifier {
+    
+    @Environment(DependencyContainer.self) private var container
+    let path: Binding<[NavigationPathOption]>
+    
+    func body(content: Content) -> some View {
+        content
             .navigationDestination(for: NavigationPathOption.self) { newValue in
                 switch newValue {
                 case .chat(avatarId: let avatarId, chat: let chat):
                     ChatView(chat: chat, avatarId: avatarId)
                 case .category(category: let category, imageName: let imageName):
-                    CategoryListView(path: path, category: category, imageName: imageName)
+                    CategoryListView(viewModel: CategoryListViewModel(container: container), path: path, category: category, imageName: imageName)
                 }
             }
+    }
+}
+
+extension View {
+    func navigationDestinationForCoreModule(path: Binding<[NavigationPathOption]>) -> some View {
+        modifier(NavigationDestinationForCoreModuleViewModifier(path: path))
     }
 }
