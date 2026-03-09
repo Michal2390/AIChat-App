@@ -11,7 +11,7 @@ class MockAuthService: AuthService {
 
     @Published var currentUser: UserAuthInfo?
 
-    init(user: UserAuthInfo? = nil) {
+    init(user: UserAuthInfo? = UserAuthInfo.mock()) {
         self.currentUser = user
     }
 
