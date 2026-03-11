@@ -5,59 +5,143 @@
 //  Created by Michal Fereniec on 04/03/2026.
 //
 
-import Testing
-import SwiftUI
-@testable import AIChat
+ import Testing
+ import SwiftUI
+ @testable import AIChat
 
-@MainActor
-struct ProfileViewTests {
+ @MainActor
+ struct ProfileViewTests {
+     
+     @MainActor
+     struct MockProfileInteractor: ProfileInteractor {
+         var logger = MockLogService()
+         var user: UserModel = UserModel.mock
+         var avatars: [AvatarModel] = AvatarModel.mocks
+            
+         var currentUser: AIChat.UserModel? {
+             user
+         }
+         
+         func getAuthId() throws -> String {
+             "userId"
+         }
+         
+         func getAvatarsForAuthor(userId: String) async throws -> [AIChat.AvatarModel] {
+             avatars
+         }
+         
+         func removeAuthorIdFromAvatar(avatarId: String) async throws {
+             
+         }
+         
+         func trackEvent(event: any AIChat.LoggableEvent) {
+             logger.trackEvent(event: event)
+         }
+         
+     }
+     
+     @MainActor
+     struct AnyProfileInteractor: ProfileInteractor {
+         let anyCurrentUser: UserModel?
+         let anyGetAuthID: () throws -> String
+         let anyGetAvatarsForAuthor: (String) async throws -> [AvatarModel]
+         let anyRemoveAuthorIdFromAvatar: (String) async throws -> Void
+         let anyTrackEvent: (LoggableEvent) -> Void
+  
+         init(
+            currentUser: UserModel?,
+            getAuthID: @escaping () throws -> String,
+            getAvatarsForAuthor: @escaping (String) async throws -> [AvatarModel],
+            removeAuthorIdFromAvatar: @escaping (String) async throws -> Void,
+            trackEvent: @escaping (LoggableEvent) -> Void
+         ) {
+             self.anyCurrentUser = currentUser
+             self.anyGetAuthID = getAuthID
+             self.anyGetAvatarsForAuthor = getAvatarsForAuthor
+             self.anyRemoveAuthorIdFromAvatar = removeAuthorIdFromAvatar
+             self.anyTrackEvent = trackEvent
+         }
+        
+         init(interactor: ProfileInteractor) {
+             self.anyCurrentUser = interactor.currentUser
+             self.anyGetAuthID = interactor.getAuthId
+             self.anyGetAvatarsForAuthor = interactor.getAvatarsForAuthor
+             self.anyRemoveAuthorIdFromAvatar = interactor.removeAuthorIdFromAvatar
+             self.anyTrackEvent = interactor.trackEvent
+         }
+         
+         init(interactor: MockProfileInteractor) {
+             self.anyCurrentUser = interactor.currentUser
+             self.anyGetAuthID = interactor.getAuthId
+             self.anyGetAvatarsForAuthor = interactor.getAvatarsForAuthor
+             self.anyRemoveAuthorIdFromAvatar = interactor.removeAuthorIdFromAvatar
+             self.anyTrackEvent = interactor.trackEvent
+         }
+         
+         init(interactor: ProdProfileInteractor) {
+             self.anyCurrentUser = interactor.currentUser
+             self.anyGetAuthID = interactor.getAuthId
+             self.anyGetAvatarsForAuthor = interactor.getAvatarsForAuthor
+             self.anyRemoveAuthorIdFromAvatar = interactor.removeAuthorIdFromAvatar
+             self.anyTrackEvent = interactor.trackEvent
+         }
+         
+         var currentUser: AIChat.UserModel? {
+             anyCurrentUser
+         }
+         
+         func getAuthId() throws -> String {
+             try anyGetAuthID()
+         }
+         
+         func getAvatarsForAuthor(userId: String) async throws -> [AIChat.AvatarModel] {
+             try await anyGetAvatarsForAuthor(userId)
+         }
+         
+         func removeAuthorIdFromAvatar(avatarId: String) async throws {
+             try await anyRemoveAuthorIdFromAvatar(avatarId)
+         }
+         
+         func trackEvent(event: any AIChat.LoggableEvent) {
+             anyTrackEvent(event)
+         }
+     }
 
     @Test("loadData does set current user")
     func testLoadDataDoesSetCurrentUser() async throws {
-        let container = DependencyContainer()
-        let authUser = UserAuthInfo.mock()
-        let authManager = AuthManager(service: MockAuthService(user: authUser))
-        let mockUser = UserModel.mock
-        let userManager = UserManager(services: MockUserServices(user: mockUser))
-        let avatarManager = AvatarManager(remote: MockAvatarService())
-        let mockLogService = MockLogService()
-        let logManager = LogManager(services: [mockLogService])
-        
-        container.register(AuthManager.self, service: authManager)
-        container.register(UserManager.self, service: userManager)
-        container.register(AvatarManager.self, service: avatarManager)
-        container.register(LogManager.self, service: logManager)
-        
         // Given
-        let viewModel = ProfileViewModel(container: container)
+        let interactor = MockProfileInteractor()
+        let viewModel = ProfileViewModel(interactor: interactor)
         
         // When
         await viewModel.loadData()
         
         // Then
-        #expect(viewModel.currentUser?.userId == mockUser.userId)
-        #expect(mockLogService.trackedEvents.contains { $0.eventName == ProfileViewModel.Event.loadAvatarsStart.eventName })
+        #expect(viewModel.currentUser?.userId == interactor.user.userId)
+        #expect(interactor.logger.trackedEvents.contains { $0.eventName == ProfileViewModel.Event.loadAvatarsStart.eventName })
     }
     
     @Test("loadData does succeed and user avatars are set")
     func testLoadDataDoesSucceedAndAvatarsAreSet() async throws {
-        let container = DependencyContainer()
-        let authUser = UserAuthInfo.mock()
-        let authManager = AuthManager(service: MockAuthService(user: authUser))
-        let mockUser = UserModel.mock
-        let userManager = UserManager(services: MockUserServices(user: mockUser))
-        let avatars = AvatarModel.mocks
-        let avatarManager = AvatarManager(remote: MockAvatarService(avatars: avatars))
-        let mockLogService = MockLogService()
-        let logManager = LogManager(services: [mockLogService])
-        
-        container.register(AuthManager.self, service: authManager)
-        container.register(UserManager.self, service: userManager)
-        container.register(AvatarManager.self, service: avatarManager)
-        container.register(LogManager.self, service: logManager)
-        
         // Given
-        let viewModel = ProfileViewModel(container: container)
+        var events: [LoggableEvent] = []
+        let avatars = AvatarModel.mocks
+        let user = UserModel.mock
+        
+        let interactor = AnyProfileInteractor(
+            currentUser: user,
+            getAuthID: {
+                user.userId
+            },
+            getAvatarsForAuthor: { _ in
+                avatars
+            },
+            removeAuthorIdFromAvatar: { _ in },
+            trackEvent: { event in
+                events.append(event)
+            }
+        )
+        let viewModel = ProfileViewModel(interactor: interactor)
         
         // When
         await viewModel.loadData()
@@ -65,7 +149,7 @@ struct ProfileViewTests {
         // Then
         #expect(viewModel.myAvatars.count == avatars.count)
         #expect(viewModel.isLoading == false)
-        #expect(mockLogService.trackedEvents.contains { $0.eventName == ProfileViewModel.Event.loadAvatarsSuccess(count: 0).eventName })
+        #expect(events.contains { $0.eventName == ProfileViewModel.Event.loadAvatarsSuccess(count: 0).eventName })
     }
     
     @Test("loadData does fail")
@@ -85,8 +169,7 @@ struct ProfileViewTests {
         container.register(LogManager.self, service: logManager)
         
         // Given
-        let viewModel = ProfileViewModel(container: container)
-        
+        let viewModel = ProfileViewModel(interactor: ProdProfileInteractor(container: container))
         // When
         await viewModel.loadData()
         
@@ -111,7 +194,7 @@ struct ProfileViewTests {
         container.register(LogManager.self, service: logManager)
         
         // Given
-        let viewModel = ProfileViewModel(container: container)
+        let viewModel = ProfileViewModel(interactor: ProdProfileInteractor(container: container))
         
         // When
         viewModel.onSettingsButtonPressed()
@@ -137,7 +220,7 @@ struct ProfileViewTests {
         container.register(LogManager.self, service: logManager)
         
         // Given
-        let viewModel = ProfileViewModel(container: container)
+        let viewModel = ProfileViewModel(interactor: ProdProfileInteractor(container: container))
         
         // When
         viewModel.onNewAvatarButtonPressed()
@@ -163,7 +246,7 @@ struct ProfileViewTests {
         container.register(LogManager.self, service: logManager)
         
         // Given
-        let viewModel = ProfileViewModel(container: container)
+        let viewModel = ProfileViewModel(interactor: ProdProfileInteractor(container: container))
         
         // When
         let avatar = AvatarModel.mock
@@ -191,7 +274,7 @@ struct ProfileViewTests {
         container.register(LogManager.self, service: logManager)
         
         // Given
-        let viewModel = ProfileViewModel(container: container)
+        let viewModel = ProfileViewModel(interactor: ProdProfileInteractor(container: container))
         
         // When
         await viewModel.loadData()
@@ -220,7 +303,7 @@ struct ProfileViewTests {
         container.register(LogManager.self, service: logManager)
         
         // Given
-        let viewModel = ProfileViewModel(container: container)
+        let viewModel = ProfileViewModel(interactor: ProdProfileInteractor(container: container))
         
         // When
         await viewModel.loadData()
@@ -232,4 +315,4 @@ struct ProfileViewTests {
         #expect(mockLogService.trackedEvents.contains { $0.eventName == ProfileViewModel.Event.deleteAvatarFail(error: URLError(.badURL)).eventName })
     }
 
-}
+ }
