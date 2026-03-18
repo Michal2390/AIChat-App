@@ -17,6 +17,8 @@ protocol ProfileInteractor {
     func trackEvent(event: LoggableEvent)
 }
 
+extension CoreInteractor: ProfileInteractor { }
+
 @MainActor
 struct ProdProfileInteractor: ProfileInteractor {
     
@@ -303,7 +305,7 @@ struct ProfileView: View {
 
 #Preview {
     ProfileView(
-        viewModel: ProfileViewModel(interactor: ProdProfileInteractor(container: DevPreview.shared.container))
+        viewModel: ProfileViewModel(interactor: CoreInteractor(container: DevPreview.shared.container))
     )
     .previewEnvironment()
 }
