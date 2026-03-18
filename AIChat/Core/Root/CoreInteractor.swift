@@ -210,8 +210,16 @@ struct CoreInteractor {
     
     // MARK: ABTestManager
     
-    var avtiveTests: ActiveABTests {
+    var activeTests: ActiveABTests {
         abTestManager.activeTests
+    }
+    
+    var categoryRowTest: CategoryRowTestOption {
+        activeTests.categoryRowTest
+    }
+    
+    var createAccountTest: Bool {
+        activeTests.createAccountTest
     }
     
     func override(updatedTests: ActiveABTests) throws {
