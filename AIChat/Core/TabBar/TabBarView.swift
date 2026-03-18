@@ -23,7 +23,7 @@ struct TabBarView: View {
                 }
             ProfileView(
                 viewModel: ProfileViewModel(
-                    container: container
+                    interactor: CoreInteractor(container: container)
                 )
             )
             .tabItem {
