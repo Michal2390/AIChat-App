@@ -8,14 +8,10 @@ import SwiftUI
 
 @MainActor
 protocol ChatsInteractor {
-    var auth: UserAuthInfo? { get }
-    
     func trackEvent(event: LoggableEvent)
     func getRecentAvatars() throws -> [AvatarModel]
     func getAuthId() throws -> String
     func getAllChats(userId: String) async throws -> [ChatModel]
-    func getAvatar(id: String) async throws -> AvatarModel
-    func getLastChatMessage(chatId: String) async throws -> ChatMessageModel?
 }
 
 extension CoreInteractor: ChatsInteractor { }
@@ -69,20 +65,6 @@ class ChatsViewModel {
         path.append(.chat(avatarId: avatar.avatarId, chat: nil))
         interactor.trackEvent(event: Event.avatarPressed(avatar: avatar))
     }
-    
-    // MARK: ChatCellRowViewBuilder logic
-    var auth: UserAuthInfo? {
-        interactor.auth
-    }
-    
-    func getAvatar(for avatarId: String) async throws -> AvatarModel? {
-        try await interactor.getAvatar(id: avatarId)
-    }
-    
-    func getlastMessage(for chatId: String) async throws -> ChatMessageModel? {
-        try await interactor.getLastChatMessage(chatId: chatId)
-    }
-    // END: ChatCellRowViewBuilder logic
     
     enum Event: LoggableEvent {
         case loadAvatarStart
